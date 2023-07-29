@@ -131,5 +131,8 @@ final <- final %>% mutate(win = if_else(pointsDiff > 0, 1, 0))
 write.csv(final, "downstream/gamesModified2022.csv")
 
 # Save Data for XGBoost Model.
-finalXG <- final %>% select(school, opponent, win, cover, week, spread, matches("Lag"), -matches("gameId"), -weekLag, -weekLagDiff)
+finalXG <- final %>% select(school, opponent, win, cover, points, pointsDiff, week, spread, matches("Lag"), -matches("gameId"), -weekLag, -weekLagDiff)
 write.csv(finalXG, "downstream/gamesModifiedXGBoost2022.csv")
+
+# Remove non-used data:
+rm(list = c("bets", "cbsRankings", "html"))
