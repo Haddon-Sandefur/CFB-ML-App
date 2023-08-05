@@ -58,11 +58,11 @@ teamX    <- left_join(dft,   cbsTeams, by = "alt_name3",  relationship = "one-to
 teamX    <- left_join(teamX, cbsRankings, by = "cbsName", relationship = "one-to-one") %>% select(-alt_name3, -cbsName)
 
 # Merge Rankings to games:
-games <- left_join(games, teamX, by = "school", relationship = "one-to-one")
+games <- left_join(games, teamX, by = "school", relationship = "many-to-one")
 
 # Rename teamX's "school" to "opponent", "cbsRank" to "cbsRankOpp" to bring in Opponent rankings
 colnames(teamX) <- c("opponent", "cbsRankOpp")
-games           <- left_join(games, teamX, by = "opponent", relationship = "one-to-one")
+games           <- left_join(games, teamX, by = "opponent", relationship = "many-to-one")
 
 # Add Conference Average CBS Ranking
 games <- games %>% group_by(conference) %>% mutate(cbsConfRank = mean(cbsRank, na.rm = T))
