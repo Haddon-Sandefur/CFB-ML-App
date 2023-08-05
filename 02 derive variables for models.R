@@ -126,13 +126,11 @@ final <- final %>% mutate(cover = case_when(favoredTeam == 1 & pointsDiff <= -sp
 # Add a variable denoting whether a team won or not.
 final <- final %>% mutate(win = if_else(pointsDiff > 0, 1, 0))
 
+# Add Inverted Spread
+final <- final %>% mutate(spreadInverted = -1*spread)
 
 # Save Master Data
 write.csv(final, "downstream/gamesModified2022.csv")
-
-# Save Data for XGBoost Model.
-finalXG <- final %>% select(school, opponent, win, cover, points, pointsDiff, week, spread, matches("Lag"), -matches("gameId"), -weekLag, -weekLagDiff)
-write.csv(finalXG, "downstream/gamesModifiedXGBoost2022.csv")
 
 # Remove non-used data:
 rm(list = c("bets", "cbsRankings", "html"))
