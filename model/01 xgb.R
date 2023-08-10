@@ -17,8 +17,11 @@ year = 2022
 # Set Working Directory
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
+# Set Seed
+set.seed(117)
+
 # Read in data
-df <- read.csv("../downstream/gamesModified2022.csv")
+df <- read.csv("downstream/gamesModified2022.csv")
 
 # Replace all NA with 0
 df2 <- df %>% mutate_all(~replace(., is.na(.), 0))
@@ -137,8 +140,14 @@ xgbFinal <- xgbModel %>%
 # Step 5: Train Model, evaluate Train RMSE
 trainProcessed <- bake(preprocessingRecipe,  new_data = dfTrain)
 
+# Create fit.
 trPred <- xgbFinal                                             %>%
-          fit(formula = pointsDiff ~ ., data = trainProcessed) %>% # Fit Model
+          fit(formula = pointsDiff ~ ., data = trainProcessed)                              
+
+# Save fit for future predictions.
+saveRDS(trPred, "model/xgbModelParsnip.rds")
+
+trPred <- trPred                                               %>% 
           predict(new_data = trainProcessed)                   %>% # Make Predictions
           bind_cols(dfTrain)                                       # Bind processed predictions to og train data.
 
@@ -182,11 +191,11 @@ dfPred                                                            %>%
 # Final Steps: Rename some variables and save everything:
 dfPred <- dfPred %>%  rename(pointsDiffPred = .pred) %>% select(-X) %>% relocate(pointsDiffPred, .after = pointsDiff)
 
-# Save Model:
-saveRDS(xgbFinal, "xgbModel.rds")
+# Save Model Specs:
+saveRDS(xgbFinal, "xgbModelSpecs.rds")
 
-# Save Data
-write.csv(dfPred, paste("../downstream/gamesModified", year, ".csv", sep = ""))
+# Save Data:
+write.csv(dfPred, paste("downstream/gamesModifiedModel", year, ".csv", sep = ""))
 
 # Save Processed Training Data for future model interaction
-write.csv(trainProcessed, "trainProcessed.csv")
+write.csv(trainProcessed, "downstream/trainProcessed.csv")

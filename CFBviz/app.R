@@ -9,7 +9,7 @@
 
 library(shiny)
 
-df <- read.csv("../downstream/gamesModified2022.csv")
+df <- read.csv("../downstream/gamesModified2022Condensed.csv")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(

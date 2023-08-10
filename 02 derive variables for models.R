@@ -1,7 +1,8 @@
 ########################
 # Purpose:
 #
-# Calculate differentials in stats per game
+# Calculate differentials in stats per game.
+# Get lagged differences, lagged averages, lagged results.
 ########################
 
 # Library

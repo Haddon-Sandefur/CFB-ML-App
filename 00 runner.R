@@ -25,7 +25,13 @@ if(!file.exists("cbsTeamXwalk2023.txt")){
 
 # Global Variables
 year = 2022
+runModels = TRUE
 
 # Run files.
 source("01 get games bets and ranks.R")
 source("02 derive variables for models.R")
+if(runModels){
+  source("model/01 xgb.R")
+  source("model/02 adjust prediction and save.R")
+}
+source("03 merge logos to condensed data.R")
