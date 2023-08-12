@@ -9,16 +9,12 @@
 library(tidyverse)
 library(tidymodels)
 
-
+df  <- read.csv("gamesModifiedModel2022Condensed.csv") 
 
 # Write function:
 predictMatchup <- function(team1, team2, manualBooks = FALSE, spreadTeam1, moneylineTeam1, moneylineTeam2, overunder, year){
+
   
-  # Global:
-  year = year
-  
-  # Data:
-  df <- read.csv(paste("downstream/gamesModifiedModel", year, "Condensed.csv", sep = ""))
   
   pair <- df %>% 
     filter(school == team1 | school == team2) %>% 
@@ -80,8 +76,8 @@ predictMatchup <- function(team1, team2, manualBooks = FALSE, spreadTeam1, money
   pair$opponent  <- rev(pair$school)
   
   # Read Model and Train Data
-  xgbFinal <- readRDS("model/xgbModelParsnip.rds")
-  trainProcessed <- read.csv("downstream/trainProcessed.csv") %>% select(-X)
+  xgbFinal <- readRDS("xgbModelParsnip.rds")
+  trainProcessed <- read.csv("trainProcessed.csv") %>% select(-X)
   
   # Set Data Processing specifications
   preprocessingRecipe <- 
