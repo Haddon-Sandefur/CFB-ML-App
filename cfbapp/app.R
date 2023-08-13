@@ -17,8 +17,10 @@ library(bslib)
 library(xgboost)
 
 # Data:
-dfl <- read.csv("gamesModifiedModel2022CondensedLogos.csv") %>% filter(classification == "fbs")
-dfl <- dfl %>% select(school, opponent, week, matches("AvgLag"))
+dfl <- read.csv("gamesModifiedModel2022CondensedLogos.csv") %>% 
+       filter(classification == "fbs")                      %>%  
+       select(school, opponent, week, matches("AvgLag"))
+
 newNames <- snakecase::to_any_case(colnames(dfl), case = "snake") 
 newNames <- gsub("_lag", "", newNames)
 newNamesLimited <- sort(newNames[-c(1,2,3)])
@@ -28,12 +30,14 @@ source("predict matchups.R")
 # Create the Shiny UI and Server components
 ui <- fluidPage(
   
+  # Theme Setter
   theme = bs_theme(
-    bg = "#A3E38B", fg = "#050505", primary = "#198E42",
+    bg = "#f5c962", fg = "#050505", primary = "#198E42",
     base_font = font_google("Space Mono"),
     code_font = font_google("Space Mono")
   ),
   
+  # CSS style blueprint:
   tags$style(HTML("
       @import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
       h1 {
@@ -43,38 +47,39 @@ ui <- fluidPage(
       }
       h2 {
         font-family: 'Space Mono', sans-serif;
-        color:#32BD62  ;
+        color:#1d24a8  ;
         font-size: 50px;
       }
+      h5 {
+        color: #1d24a8;
+        font-weight: bold;
+      }
       body {
-        background-color: #FBF2DC;
+        background-color: #FFFDF9;
         color: #0D9347;
-        background: repeating-linear-gradient(
-          to bottom,
-          #FBF2DC 0px,
-          #DAD2BF 20px,
-          #FBF2DC 20px,
-          #DAD2BF 40px,
-        );
       }
       .shiny-input-container {
         color: #474747;
       }
       p {
         color: #050505;
-        border-color: #A3E38B;
+        border-color: #f5c962;
         border-bottom-style: solid;
         font-size: 20px;
       }
       code {
          font-size: 20px;
-      }
-      
-      
-}")),
+      }"
+      )
+    ),
   
-  h1("College Football Matchup Predictor"),
+  # Title
+  titlePanel(title=div( img(src="icon.png", height = "100px", width = "100px"), img(src="logo.png", height = "100px"))),
+  
+  # Subtitle
   h5('Please click the "Submit" button to get started!'),
+  
+  # Side bar with inputs:
   sidebarLayout(
     sidebarPanel(
       selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames[27]),
@@ -87,19 +92,21 @@ ui <- fluidPage(
                      selected = newNamesLimited[74]),
       actionButton("submitBtn", "Submit")
     ),
+    
+    # Body
     mainPanel(
       tableOutput("predictionsTable"),
+      
       plotOutput("comparePlot"),
+      
       code("Info:"),
+      
       p("The predictions you see use an XGBoost model for the output. Overall, the accuracy of wins/losses sits at about 78%, whereas the
         accuracy of the Cover Prediction sits at about 58%. The model was trained up until the last 2-3 games of the 2022 Season for all teams!
         Model predictions tend to be conservative, so you won't see many score differentials beyond a 15 point threshold. Predictions tend to be
         more useful when comparing teams from a similar echelon of strength, such as Penn State/Oregon.")
-    ),
-  ),
-  br(),
-  br(),
-  #fluidRow(column(1, img(src="cute.png", align = "bottom", height='10',width='10')))
+    )
+  )
 )
 
 server <- function(input, output) {
@@ -113,6 +120,7 @@ server <- function(input, output) {
     moneyLine2 <- input$moneyLine2
     overUnder  <- input$overUnder
     
+  # Return predictMatchup dataframe and pull relevant details:
     if (!is.null(team1) && !is.null(team2)) {
       predictMatchup(team1, 
                      team2, 
@@ -144,6 +152,7 @@ server <- function(input, output) {
     team2 <-  input$team2
     variable <- input$plotVar
     
+    # The plot:
     dfl %>% dplyr::filter(school == team1 | school == team2) %>% 
             group_by(school) %>% 
             filter(week == max(week)) %>% 
@@ -162,19 +171,20 @@ server <- function(input, output) {
 
             ylab("") +
             xlab(to_any_case(variable, "title"))
-    
-    
-  })
+   }
+  )
   
+  # Grab output of the prediction dataframe:
   output$predictionsTable <- renderTable(
     expr = {predictions()},
     striped  = T,
     bordered = T)
   
+  #Grab output of the plot.
   output$comparePlot <- renderPlot(
     expr = {cfbplot()},  bg="transparent"
   )
-  
 }
+
 # Run the application 
 shinyApp(ui = ui, server = server)
