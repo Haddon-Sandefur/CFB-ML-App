@@ -14,11 +14,7 @@ library(tidymodels)
 library(cfbplotR)
 library(snakecase)
 library(bslib)
-
-# Directory:
-runnerPath <- dirname(rstudioapi::getActiveDocumentContext()$path)
-setwd(runnerPath)
-
+library(xgboost)
 
 # Data:
 dfl <- read.csv("gamesModifiedModel2022CondensedLogos.csv") %>% filter(classification == "fbs")
@@ -84,10 +80,10 @@ ui <- fluidPage(
       selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames[27]),
       selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames[36]),
       numericInput("spread", "Home Team's Spread", value = -7, min = -80, max = 80),
-      numericInput("moneyLine1", "School's Moneyline",value = -500, min = -12000, max = 12000),
-      numericInput("moneyLine2", "Opponent's Moneyline",value = 350, min = -12000, max = 12000),
+      numericInput("moneyLine1", "Home Team's Moneyline",value = -500, min = -12000, max = 12000),
+      numericInput("moneyLine2", "Away Team's Moneyline",value = 350, min = -12000, max = 12000),
       numericInput("overUnder",  "Over/Under",value = 90, min = 0, max = 180),
-      selectizeInput("plotVar", "X-Axis Variable", choices = newNamesLimited, multiple = FALSE,
+      selectizeInput("plotVar", "Bar Chart Variable", choices = newNamesLimited, multiple = FALSE,
                      selected = newNamesLimited[74]),
       actionButton("submitBtn", "Submit")
     ),
@@ -96,14 +92,14 @@ ui <- fluidPage(
       plotOutput("comparePlot"),
       code("Info:"),
       p("The predictions you see use an XGBoost model for the output. Overall, the accuracy of wins/losses sits at about 78%, whereas the
-        accuracey of the Cover Prediction sits at about 58%. The model was trained up until the last 2-3 games of the 2022 Season for all teams!")
+        accuracy of the Cover Prediction sits at about 58%. The model was trained up until the last 2-3 games of the 2022 Season for all teams!
+        Model predictions tend to be conservative, so you won't see many score differentials beyond a 15 point threshold. Predictions tend to be
+        more useful when comparing teams from a similar echelon of strength, such as Penn State/Oregon.")
     ),
-    
-   
   ),
   br(),
   br(),
-  fluidRow(column(1, img(src="cute.png", align = "bottom", height='10',width='10')))
+  #fluidRow(column(1, img(src="cute.png", align = "bottom", height='10',width='10')))
 )
 
 server <- function(input, output) {
@@ -127,9 +123,9 @@ server <- function(input, output) {
                      moneylineTeam2 = moneyLine2, 
                      overunder = overUnder) %>% 
         select(school, pointsDiffPredFinal, winPred, coverPred, spread) %>%
-        mutate(coverPred = if_else(coverPred == 1, "Covers",
-                                   if_else(abs(pointsDiffPredFinal) == abs(spread), 
-                                           "House Wins", 
+        mutate(coverPred = if_else(-pointsDiffPredFinal == spread, 
+                                   "Push",
+                                   if_else(coverPred == 1, "Covers",
                                            "Does Not Cover")),
                winPred   = if_else(abs(pointsDiffPredFinal) == 0, "It's 50/50 :)",
                                  if_else(winPred == 1, "Win" , "Loss"))) %>% 
@@ -138,11 +134,8 @@ server <- function(input, output) {
                `Win Prediction` = winPred,
                `Cover Prediction` =  coverPred,
                Spread = spread)
+     }
     }
-  }
-  
-
-  
   )
   
   # Make some CFB comparison plots.
@@ -164,8 +157,8 @@ server <- function(input, output) {
             theme(legend.position = "none",
                   panel.grid.major.y = element_blank()) +
             theme(axis.text.y = element_cfb_logo(size = 3)) +
-            theme(axis.text.x = element_text(size = 30)) +
-            theme(axis.title=element_text(size=30)) +
+            theme(axis.text.x = element_text(size = 20)) +
+            theme(axis.title=element_text(size=20)) +
 
             ylab("") +
             xlab(to_any_case(variable, "title"))

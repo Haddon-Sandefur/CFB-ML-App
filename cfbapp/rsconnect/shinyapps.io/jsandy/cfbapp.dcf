@@ -1,0 +1,10 @@
+name: cfbapp
+title:
+username: jsandy
+account: jsandy
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9597680
+bundleId: 7562891
+url: https://jsandy.shinyapps.io/cfbapp/
+version: 1
