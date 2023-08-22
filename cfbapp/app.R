@@ -29,6 +29,7 @@ source("predict matchups.R")
 
 # Create the Shiny UI and Server components
 ui <- fluidPage(
+  title = "Rascal Sports - CFB Prediction Model",
   
   # Theme Setter
   theme = bs_theme(
@@ -50,9 +51,12 @@ ui <- fluidPage(
         color:#1d24a8  ;
         font-size: 50px;
       }
-      h5 {
+      h4 {
         color: #1d24a8;
         font-weight: bold;
+      }
+      h5 {
+        color: #1d24a8;
       }
       body {
         background-color: #FFFDF9;
@@ -77,6 +81,7 @@ ui <- fluidPage(
   titlePanel(title=div( img(src="icon.png", height = "100px", width = "100px"), img(src="logo.png", height = "100px"))),
   
   # Subtitle
+  h4('2022 College Football Matchup Simulator'),
   h5('Please click the "Submit" button to get started!'),
   
   # Side bar with inputs:
@@ -101,10 +106,10 @@ ui <- fluidPage(
       
       code("Info:"),
       
-      p("The predictions you see use an XGBoost model for the output. Overall, the accuracy of wins/losses sits at about 78%, whereas the
-        accuracy of the Cover Prediction sits at about 58%. The model was trained up until the last 2-3 games of the 2022 Season for all teams!
+      p("The predictions you see use an XGBoost model for the output. Overall, the accuracy of wins/losses sits at about 76%, whereas the
+        accuracy of the Cover Prediction sits at about 56%. The model was trained up until the last 2-3 games of the 2022 Season for all teams!
         Model predictions tend to be conservative, so you won't see many score differentials beyond a 15 point threshold. Predictions tend to be
-        more useful when comparing teams from a similar echelon of strength, such as Penn State/Oregon.")
+        more useful when comparing teams from a similar echelon of strength, such as Penn State/Oregon. A 2023 version will be deployed once there's data :)")
     )
   )
 )
