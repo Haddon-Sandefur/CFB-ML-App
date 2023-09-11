@@ -11,15 +11,16 @@ setwd(runnerPath)
 
 # Append all weeks of ESPN game-by-game stats.
 games <- list()
-for (i in 1:14) {
-  games[[i]] <- cfbfastR::cfbd_game_team_stats(year = 2022, week = i)
+for (i in 1:2) {
+  games[[i]] <- cfbfastR::cfbd_game_team_stats(year = year, week = i)
 }
 
 games   <- do.call("rbind", games)
 games$row_id <- 1:nrow(games)
 
-# Download betting information per game.
-bets    <- cfbd_betting_lines(year = 2022)
+# Download betting information per game. Use Only one provider:
+bets    <- cfbd_betting_lines(year = year) %>%
+           filter(provider == "Bovada")
 
 # Merge betting data to game-by-game data.
 games   <- left_join(games, bets, by = "game_id", relationship = "many-to-many")

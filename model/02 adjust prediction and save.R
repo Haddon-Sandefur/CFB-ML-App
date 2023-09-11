@@ -5,9 +5,6 @@
 library(tidyverse)
 library(tidymodels)
 
-# Data Year
-year = 2022
-
 # Data
 df <- read.csv(paste("downstream/gamesModifiedModel", year, ".csv", sep = ""))
 
@@ -16,11 +13,11 @@ df$pointsDiffPredAdj <- df$pointsDiffPred - .5*df$spreadAvg
 
 # RMSE
 checks <- paste("Overall RMSE of Sportbook Spread (Untrained Data, Week > 10):", 
-                round(rmse(df %>% filter(week >10), pointsDiff, spreadInverted)[3], digits = 2),
+                round(rmse(df %>% filter(week > max(week) -1), pointsDiff, spreadInverted)[3], digits = 2),
                "Overall RMSE of Unadjusted Prediction (Untrained Data, Week > 10):", 
-                round(rmse(df %>% filter(week > 10), pointsDiff, pointsDiffPred)[3], digits = 2),
+                round(rmse(df %>% filter(week > max(week) -1), pointsDiff, pointsDiffPred)[3], digits = 2),
                "Overall RMSE of Adjusted Prediction (Untrained Data, Week > 10):", 
-                round(rmse(df %>% filter(week >10), pointsDiff, pointsDiffPredAdj)[3], digits = 2),
+                round(rmse(df %>% filter(week > max(week) -1), pointsDiff, pointsDiffPredAdj)[3], digits = 2),
                sep = "\n"
                )
 
@@ -48,8 +45,8 @@ df2 <- df %>%
      
 # Wow... beats the spread prediction by 2 points on average
 cat(paste(
-    "Final Symmetric Prediction RMSE (Untrained Data, Week > 10):",
-    round(rmse(df2 %>% filter(week >10), pointsDiff, pointsDiffPredFinal)[3], digits = 2),
+    "Final Symmetric Prediction RMSE (Untrained Data, Week > current):",
+    round(rmse(df2 %>% filter(week > max(week)-1), pointsDiff, pointsDiffPredFinal)[3], digits = 2),
     sep = "\n"
          )
 )
@@ -61,7 +58,7 @@ df3 <- df2 %>%
        drop_na(coverPred) %>% 
        mutate(coverPred = as.integer(coverPred),
               winPred = as.integer(if_else(pointsDiffPredFinal >= 0, 1, 0))) %>% 
-       filter(week >10)
+       filter(week > max(week) -1)
 
 # Cover Performance:
 print(caret::confusionMatrix(as.factor(df3$coverPred), as.factor(df3$cover), positive = "1"))
@@ -88,4 +85,4 @@ df5 <- df4 %>% select(!matches("Diff")) %>% ungroup()
 write.csv(df5, paste("downstream/gamesModifiedModel", year, "Condensed.csv", sep = ""))
 
 # Clear Memory
-rm(list = ls())
+rm(list = setdiff(c("year", "runnerPath"), ls()))

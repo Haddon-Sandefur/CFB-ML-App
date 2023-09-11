@@ -12,7 +12,7 @@ library(xgboost)
 library(tidymodels)
 
 # Data Year
-year = 2022
+year = year
 
 # Set Working Directory
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -21,39 +21,39 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 set.seed(117)
 
 # Read in data
-df <- read.csv("downstream/gamesModified2022.csv")
+df <- read.csv(paste("downstream/gamesModified", year,".csv", sep = ""))
 
 # Replace all NA with 0
 df2 <- df %>% mutate_all(~replace(., is.na(.), 0))
 
 # Predict Score Diff - Drop Week 1 & grab variables of interest.
-df2 <- df2 %>% filter(week != 1) %>% select(pointsDiff,
-                                          school,
-                                          opponent,
-                                          cbsRankDiff,
-                                          cbsConfRankDiff,
-                                          rushTdsAvgLagDiff,
-                                          rushingYardsAvgLagDiff,
-                                          totalYardsAvgLagDiff,
-                                          yardsPerPassAvgLagDiff,
-                                          penaltyYardsAvgLagDiff,
-                                          turnoversAvgLagDiff,
-                                          completionPercentAvgLagDiff,
-                                          rushTdsLagDiff,
-                                          rushingYardsLagDiff,
-                                          totalYardsLagDiff,
-                                          yardsPerPassLagDiff,
-                                          penaltyYardsLagDiff,
-                                          turnoversLagDiff,
-                                          completionPercentLagDiff,
-                                          spreadOpen,
-                                          moneyline,
-                                          overUnderOpen,
-                                          week
-                                          )
+df2 <- df2 %>% select(pointsDiff,
+                      school,
+                      opponent,
+                      cbsRankDiff,
+                      cbsConfRankDiff,
+                      rushTdsAvgLagDiff,
+                      rushingYardsAvgLagDiff,
+                      totalYardsAvgLagDiff,
+                      yardsPerPassAvgLagDiff,
+                      penaltyYardsAvgLagDiff,
+                      turnoversAvgLagDiff,
+                      completionPercentAvgLagDiff,
+                      rushTdsLagDiff,
+                      rushingYardsLagDiff,
+                      totalYardsLagDiff,
+                      yardsPerPassLagDiff,
+                      penaltyYardsLagDiff,
+                      turnoversLagDiff,
+                      completionPercentLagDiff,
+                      spreadOpen,
+                      moneyline,
+                      overUnderOpen,
+                      week
+                      )
 
 # Split train and test set:
-testWeeks <- c(11, 12, 13, 14)
+testWeeks <- max(df2$week)
 dfTrain <- df2 %>% filter(!(week %in% testWeeks)) %>% select(-week)
 dfTest  <- df2 %>% filter(week %in% testWeeks)    %>% select(-week)
 rm("df2")
@@ -189,7 +189,7 @@ dfPred                                                            %>%
 #============================================================================
 
 # Final Steps: Rename some variables and save everything:
-dfPred <- dfPred %>%  rename(pointsDiffPred = .pred) %>% select(-X) %>% relocate(pointsDiffPred, .after = pointsDiff)
+dfPred <- dfPred %>%  rename(pointsDiffPred = .pred) %>% relocate(pointsDiffPred, .after = pointsDiff)
 
 # Save Model Specs:
 saveRDS(xgbFinal, "xgbModelSpecs.rds")

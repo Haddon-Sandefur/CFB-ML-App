@@ -4,8 +4,6 @@
 # Merge college team logo info to data for plotting
 ##################################################
 setwd(runnerPath)
-# Data year
-year = 2022
 
 # Libraries
 library(tidyverse)

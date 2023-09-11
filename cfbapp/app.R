@@ -17,12 +17,12 @@ library(bslib)
 library(xgboost)
 
 # Data:
-dfl <- read.csv("gamesModifiedModel2022CondensedLogos.csv") %>% 
+dfl <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
        filter(classification == "fbs")                      %>%  
-       select(school, opponent, week, matches("AvgLag"))
+       select(school, opponent, week, matches("Avg"), -matches("Lag"))
 
 newNames <- snakecase::to_any_case(colnames(dfl), case = "snake") 
-newNames <- gsub("_lag", "", newNames)
+#newNames <- gsub("_lag", "", newNames)
 newNamesLimited <- sort(newNames[-c(1,2,3)])
 teamNames <- sort(unique(dfl$school))
 source("predict matchups.R")
@@ -78,17 +78,17 @@ ui <- fluidPage(
     ),
   
   # Title
-  titlePanel(title=div( img(src="icon.png", height = "100px", width = "100px"), img(src="logo.png", height = "100px"))),
+  titlePanel(title=div(img(src="icon.png", height = "100px", width = "100px"), img(src="logo.png", height = "100px"))),
   
   # Subtitle
-  h4('2022 College Football Matchup Simulator'),
+  h4('2023 College Football Matchup Simulator'),
   h5('Please click the "Submit" button to get started!'),
   
   # Side bar with inputs:
   sidebarLayout(
     sidebarPanel(
-      selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames[27]),
-      selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames[36]),
+      selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames[26]),
+      selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames[34]),
       numericInput("spread", "Home Team's Spread", value = -7, min = -80, max = 80),
       numericInput("moneyLine1", "Home Team's Moneyline",value = -500, min = -12000, max = 12000),
       numericInput("moneyLine2", "Away Team's Moneyline",value = 350, min = -12000, max = 12000),
@@ -106,10 +106,8 @@ ui <- fluidPage(
       
       code("Info:"),
       
-      p("The predictions you see use an XGBoost model for the output. Overall, the accuracy of wins/losses sits at about 76%, whereas the
-        accuracy of the Cover Prediction sits at about 56%. The model was trained up until the last 2-3 games of the 2022 Season for all teams!
-        Model predictions tend to be conservative, so you won't see many score differentials beyond a 15 point threshold. Predictions tend to be
-        more useful when comparing teams from a similar echelon of strength, such as Penn State/Oregon. A 2023 version will be deployed once there's data :)")
+      p("The predictions you see use an XGBoost model for the output. Last year in the late season, the accuracy of wins/losses sat at about 76%, whereas the
+        accuracy of the Cover Prediction sat at about 56%. After week 3, the data ought to complete enough to include all teams on the app!")
     )
   )
 )
@@ -129,7 +127,7 @@ server <- function(input, output) {
     if (!is.null(team1) && !is.null(team2)) {
       predictMatchup(team1, 
                      team2, 
-                     year = 2022, 
+                     year = 2023, 
                      manualBooks = T, 
                      spreadTeam1 = spread, 
                      moneylineTeam1 = moneyLine1, 
@@ -175,7 +173,7 @@ server <- function(input, output) {
             theme(axis.title=element_text(size=20)) +
 
             ylab("") +
-            xlab(to_any_case(variable, "title"))
+            xlab(to_any_case(variable, "title")) 
    }
   )
   

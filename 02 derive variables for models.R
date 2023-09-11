@@ -12,7 +12,7 @@ library(tidyverse)
 setwd(runnerPath)
 
 # Read in data and sort
-games <- read.csv("downstream/games2022.csv") %>% arrange(rowId) 
+games <- read.csv(paste("downstream/games", year, ".csv", sep = "")) %>% arrange(rowId) 
 # NOTE. R v 4.3.1 will coerce certain Latin characters to unicode. Please use R version 4.1.1 (works fine).
 
 games$rowId <- as.character(games$rowId)
@@ -131,7 +131,7 @@ final <- final %>% mutate(win = if_else(pointsDiff > 0, 1, 0))
 final <- final %>% mutate(spreadInverted = -1*spread)
 
 # Save Master Data
-write.csv(final, "downstream/gamesModified2022.csv")
+write.csv(final, paste("downstream/gamesModified", year, ".csv", sep = ""), row.names = F)
 
 # Remove non-used data:
 rm(list = c("bets", "cbsRankings", "html"))
