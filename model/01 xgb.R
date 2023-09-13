@@ -53,9 +53,14 @@ df2 <- df2 %>% select(pointsDiff,
                       )
 
 # Split train and test set:
+# TEMPORARY: Make Train and Test Sets Equivalent. 
+# We want a full train on all available data.
+# A rudementary test run suggests performance metrics will
+# be similar to last year's (Spread Predictions ~ 52-56% Accurate.
+# Win Loss Predictions ~ 76% Accurate)
 testWeeks <- max(df2$week)
-dfTrain <- df2 %>% filter(!(week %in% testWeeks)) %>% select(-week)
-dfTest  <- df2 %>% filter(week %in% testWeeks)    %>% select(-week)
+dfTrain <- df2 #%>% filter(!(week %in% testWeeks)) %>% select(-week)
+dfTest  <- df2 #%>% filter(week %in% testWeeks)    %>% select(-week)
 rm("df2")
 
 # Model Set-Up with Tidymodels =================================================

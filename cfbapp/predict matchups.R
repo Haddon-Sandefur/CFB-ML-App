@@ -9,7 +9,7 @@
 library(tidyverse)
 library(tidymodels)
 
-df  <- read.csv("gamesModifiedModel2022Condensed.csv") 
+df  <- read.csv(paste("gamesModifiedModel2023Condensed.csv")) 
 
 # Write function:
 predictMatchup <- function(team1, team2, manualBooks = FALSE, spreadTeam1, moneylineTeam1, moneylineTeam2, overunder, year){

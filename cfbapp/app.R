@@ -87,8 +87,8 @@ ui <- fluidPage(
   # Side bar with inputs:
   sidebarLayout(
     sidebarPanel(
-      selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames[26]),
-      selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames[34]),
+      selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames[27]),
+      selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames[35]),
       numericInput("spread", "Home Team's Spread", value = -7, min = -80, max = 80),
       numericInput("moneyLine1", "Home Team's Moneyline",value = -500, min = -12000, max = 12000),
       numericInput("moneyLine2", "Away Team's Moneyline",value = 350, min = -12000, max = 12000),
@@ -107,7 +107,8 @@ ui <- fluidPage(
       code("Info:"),
       
       p("The predictions you see use an XGBoost model for the output. Last year in the late season, the accuracy of wins/losses sat at about 76%, whereas the
-        accuracy of the Cover Prediction sat at about 56%. After week 3, the data ought to complete enough to include all teams on the app!")
+        accuracy of the Cover Prediction sat at about 56%. All FBS-FCS and FCS-FCS matchup stats are excluded and do not contribute to averages. Predictions
+        tend to be more conservative, so if you pit a really bad team against a really good team, the predicted score differential will likely be less than 20.")
     )
   )
 )

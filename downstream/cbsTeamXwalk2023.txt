@@ -130,3 +130,5 @@
 "129","Nevada","Nevada"
 "130","New Mexico","New Mexico"
 "131","UMass","UMass"
+"132","Jacksonville State","Jacksonville St."
+"133","Sam Houston State","Sam Houston"
