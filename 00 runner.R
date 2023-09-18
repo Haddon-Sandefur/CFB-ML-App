@@ -20,7 +20,6 @@ if(!file.exists("cbsTeamXwalk2023.txt")){
     file.copy(from = "cbsTeamXwalk2023.txt", to = "downstream/cbsTeamXwalk2023.txt")
     file.remove("cbsTeamXwalk2023.txt")
   }
-
 }
 
 # Global Variables
