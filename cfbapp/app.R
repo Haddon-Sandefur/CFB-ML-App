@@ -111,7 +111,7 @@ ui <- fluidPage(
       
       p("The predictions you see use an XGBoost model for the output. Last year in the late season, the accuracy of wins/losses sat at about 76%, whereas the
         accuracy of the Cover Prediction sat at about 56%. All FBS-FCS and FCS-FCS matchup stats are excluded and do not contribute to averages. Predictions
-        tend to be more conservative, so if you pit a really bad team against a really good team, the predicted score differential will likely be less than 20.
+        tend to be more conservative, so if you pit a really bad team against a really good team, the predicted score differential will likely be less than 30.
         This app is free and made for fun. I am not responsible for any financial losses/gains nor gambling decisions impacting or carried out by users.")
     )
   )
