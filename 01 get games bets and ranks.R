@@ -11,7 +11,7 @@ setwd(runnerPath)
 
 # Append all weeks of ESPN game-by-game stats.
 games <- list()
-for (i in 1:3) {
+for (i in 1:4) {
   games[[i]] <- cfbfastR::cfbd_game_team_stats(year = year, week = i)
 }
 
