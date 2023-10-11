@@ -24,7 +24,9 @@ dfl <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>%
 # Quick Louisiana Tech Fix - two week 1 games so I'm just going to drop the FIU one:
 # dfl <- dfl[-86,]
 
-newNames <- snakecase::to_any_case(colnames(dfl), case = "snake") 
+newNames <- snakecase::to_any_case(colnames(dfl), case = "snake")
+newNames[which(newNames == "cbs_rank_avg")] <- "cbs_rank"
+newNames[which(newNames == "cbs_rank_opp_avg")] <- "cbs_rank_opp"
 #newNames <- gsub("_lag", "", newNames)
 newNamesLimited <- sort(newNames[-c(1,2,3)])
 teamNames <- sort(unique(dfl$school))
@@ -90,11 +92,11 @@ ui <- fluidPage(
   # Side bar with inputs:
   sidebarLayout(
     sidebarPanel(
-      selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames[105]),
-      selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames[81]),
-      numericInput("spread", "Home Team's Spread", value = -6.5, min = -80, max = 80),
-      numericInput("moneyLine1", "Home Team's Moneyline",value = -250, min = -12000, max = 12000),
-      numericInput("moneyLine2", "Away Team's Moneyline",value = 210, min = -12000, max = 12000),
+      selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames[127]),
+      selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames[85]),
+      numericInput("spread", "Home Team's Spread", value = -2.5, min = -80, max = 80),
+      numericInput("moneyLine1", "Home Team's Moneyline",value = -150, min = -12000, max = 12000),
+      numericInput("moneyLine2", "Away Team's Moneyline",value = 125, min = -12000, max = 12000),
       numericInput("overUnder",  "Over/Under",value = 56, min = 0, max = 180),
       selectizeInput("plotVar", "Bar Chart Variable", choices = newNamesLimited, multiple = FALSE,
                      selected = newNamesLimited[74]),
