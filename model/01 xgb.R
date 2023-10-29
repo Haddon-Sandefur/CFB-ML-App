@@ -151,6 +151,7 @@ trPred <- xgbFinal                                             %>%
 
 # Save fit for future predictions.
 saveRDS(trPred, "model/xgbModelParsnip.rds")
+saveRDS(trPred, "cfbapp/xgbModelParsnip.rds")
 
 trPred <- trPred                                               %>% 
           predict(new_data = trainProcessed)                   %>% # Make Predictions
@@ -201,6 +202,8 @@ saveRDS(xgbFinal, "xgbModelSpecs.rds")
 
 # Save Data:
 write.csv(dfPred, paste("downstream/gamesModifiedModel", year, ".csv", sep = ""))
+write.csv(dfPred, paste("cfbapp/gamesModifiedModel", year, ".csv", sep = ""))
 
 # Save Processed Training Data for future model interaction
 write.csv(trainProcessed, "downstream/trainProcessed.csv")
+write.csv(trainProcessed, "cfbapp/trainProcessed.csv")

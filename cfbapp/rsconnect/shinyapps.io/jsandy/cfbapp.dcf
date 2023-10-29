@@ -5,6 +5,6 @@ account: jsandy
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9597680
-bundleId: 7832835
+bundleId: 7867289
 url: https://jsandy.shinyapps.io/cfbapp/
 version: 1

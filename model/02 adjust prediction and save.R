@@ -83,6 +83,7 @@ write.csv(df4, paste("downstream/gamesModifiedModel", year, ".csv", sep = ""))
 # Save Data with select variables:
 df5 <- df4 %>% select(!matches("Diff")) %>% ungroup()
 write.csv(df5, paste("downstream/gamesModifiedModel", year, "Condensed.csv", sep = ""))
+write.csv(df5, paste("cfbapp/gamesModifiedModel", year, "Condensed.csv", sep = ""))
 
 # Clear Memory
 rm(list = setdiff(c("year", "runnerPath"), ls()))
