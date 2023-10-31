@@ -17,25 +17,7 @@ library(bslib)
 library(xgboost)
 library(httr2)
 
-# GPT vars
-url <- "https://api.openai.com/v1"
-api_key <- Sys.getenv("OPENAI_API_KEY")
-body <- list(model = "gpt-3.5-turbo",
-             messages = list(list(role = "system", content = "You're a rabid Georgia Southern Eagles fan:"), 
-                             list(role = "user", content = "What college team do you dislike the most?")))
-req  <- request(url)
-resp <- req %>% 
-  req_url_path_append("chat/completions") %>% 
-  req_headers("Content-Type"  = "application/json",
-              "Authorization" = paste("Bearer", api_key)) %>% 
-  req_body_json(body) %>% 
-  req_retry(max_tries = 4) %>%
-  req_throttle(rate = 10) %>%
-  req_perform()
 
-simpleResp <- resp %>% resp_body_json(simplifyVector = TRUE)
-
-simpleResp$choices$message$content
 
 # Data:
 dfl <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
@@ -51,7 +33,7 @@ newNames[which(newNames == "cbs_rank_opp_avg")] <- "cbs_rank_opp"
 #newNames <- gsub("_lag", "", newNames)
 newNamesLimited <- sort(newNames[-c(1,2,3)])
 teamNames <- sort(unique(dfl$school))
-source("predict matchups.R")
+source("app helper.R")
 
 # Create the Shiny UI and Server components
 ui <- fluidPage(
