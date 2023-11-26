@@ -38,13 +38,15 @@ source("app helper.R")
 # Create the Shiny UI and Server components
 ui <- fluidPage(
   title = "Rascal Sports - CFB Prediction Model",
+
   
   # Theme Setter
   theme = bs_theme(
-    bg = "#f5c962", fg = "#050505", primary = "#198E42",
+    bg = "#f5c962", fg = "#050505", primary = "#050505",
     base_font = font_google("Space Mono"),
     code_font = font_google("Space Mono")
   ),
+  
   
   # CSS style blueprint:
   tags$style(HTML("
@@ -66,9 +68,12 @@ ui <- fluidPage(
       h5 {
         color: #1d24a8;
       }
+      h6 {
+        color: #1d24a8;
+      }
       body {
         background-color: #FFFDF9;
-        color: #0D9347;
+        color: #191919;
       }
       .shiny-input-container {
         color: #474747;
@@ -81,6 +86,7 @@ ui <- fluidPage(
       }
       code {
          font-size: 20px;
+         color: #050505;
       }"
       )
     ),
@@ -89,7 +95,7 @@ ui <- fluidPage(
   titlePanel(title=div(img(src="icon.png", height = "100px", width = "100px"), img(src="logo.png", height = "100px"))),
   
   # Subtitle
-  h4('2023 College Football Matchup Simulator'),
+  h4('2023 College Football Matchup Simulator - NOTE: THE API WHICH THIS APP DEPENDS ON HAS BEEN DOWN, MODEL ONLY FUNCTIONAL THROUGH WEEK 8'),
   h5('Please click the "Submit" button to get started!'),
   
   # Side bar with inputs:
@@ -103,7 +109,10 @@ ui <- fluidPage(
       numericInput("overUnder",  "Over/Under",value = 45, min = 0, max = 180),
       selectizeInput("plotVar", "Bar Chart Variable", choices = newNamesLimited, multiple = FALSE,
                      selected = newNamesLimited[74]),
-      actionButton("submitBtn", "Submit")
+      actionButton("submitBtn", "Submit"),
+      # Textbox for GPT interaction
+      textAreaInput("prompt", label = "Chat with a depressed AI Auburn Fan", width = "500px"),
+      actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary")
     ),
     
     # Body
@@ -118,11 +127,15 @@ ui <- fluidPage(
         accuracy of the Cover Prediction sat at about 56%. All FBS-FCS and FCS-FCS matchup stats are excluded and do not contribute to averages. Predictions
         tend to be more conservative, so if you pit a really bad team against a really good team, the predicted score differential will likely be less than 30.
         This app is free and made for fun. I am not responsible for any financial losses/gains nor gambling decisions impacting or carried out by users.")
-    )
-  )
+    ),
+
+  ),
+  p(uiOutput("response"))
+  
+  
 )
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   
   # Return a table with the predictions of the selected teams.
   predictions <- eventReactive(input$submitBtn, {
@@ -197,6 +210,23 @@ server <- function(input, output) {
   output$comparePlot <- renderPlot(
     expr = {cfbplot()},  bg="transparent"
   )
+  
+  # Obtain GPT Response
+ 
+  rv <- eventReactive(input$chat, {
+  chat_history <- NULL
+  message <-  input$prompt
+  response <- chat(message,
+                     history = chat_history,
+                     system_prompt = "general")
+  chat_history <- update_history(chat_history, user_message = message, response = response)
+  response}
+  ) 
+
+  
+  output$response <- renderUI({rv()}) 
+  
+  
 }
 
 # Run the application 
