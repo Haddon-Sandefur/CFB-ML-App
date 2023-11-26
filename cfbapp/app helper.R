@@ -142,7 +142,7 @@ predictMatchup <- function(team1, team2, manualBooks = FALSE, spreadTeam1, money
 chat <- function(user_message, 
                  history = NULL,
                  system_prompt = c("general", "code"),
-                 api_key = Sys.getenv("OPENAI_API_KEY")) {
+                 api_key = OPENAI_API_KEY) {
   system   <- get_system_prompt(system_prompt)
   prompt   <- prepare_prompt(user_message, system, history)
   base_url <- "https://api.openai.com/v1"
@@ -154,7 +154,7 @@ chat <- function(user_message,
     req_url_path_append("chat/completions") |> 
     req_auth_bearer_token(token = api_key) |> 
     req_headers("Content-Type" = "application/json") |> 
-    req_user_agent("James Wade @jameshwade | OpenAI tutorial") |> 
+    req_user_agent("Haddon's App | Rascal Sports") |> 
     req_body_json(body) |> 
     req_retry(max_tries = 4) |> 
     req_throttle(rate = 15) |> 

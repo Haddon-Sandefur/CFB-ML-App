@@ -1,3 +1,4 @@
 *.csv
 *.dcf
 /rsconnect/
+/cfbapp/req.R

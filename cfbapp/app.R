@@ -17,8 +17,6 @@ library(bslib)
 library(xgboost)
 library(httr2)
 
-
-
 # Data:
 dfl <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
        filter(classification == "fbs")                      %>%  
@@ -34,6 +32,7 @@ newNames[which(newNames == "cbs_rank_opp_avg")] <- "cbs_rank_opp"
 newNamesLimited <- sort(newNames[-c(1,2,3)])
 teamNames <- sort(unique(dfl$school))
 source("app helper.R")
+source("req.R")
 
 # Create the Shiny UI and Server components
 ui <- fluidPage(
@@ -110,6 +109,7 @@ ui <- fluidPage(
       selectizeInput("plotVar", "Bar Chart Variable", choices = newNamesLimited, multiple = FALSE,
                      selected = newNamesLimited[74]),
       actionButton("submitBtn", "Submit"),
+      
       # Textbox for GPT interaction
       textAreaInput("prompt", label = "Chat with a depressed AI Auburn Fan", width = "500px"),
       actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary")
@@ -130,9 +130,8 @@ ui <- fluidPage(
     ),
 
   ),
+  
   p(uiOutput("response"))
-  
-  
 )
 
 server <- function(input, output, session) {
@@ -212,7 +211,6 @@ server <- function(input, output, session) {
   )
   
   # Obtain GPT Response
- 
   rv <- eventReactive(input$chat, {
   chat_history <- NULL
   message <-  input$prompt
@@ -222,11 +220,8 @@ server <- function(input, output, session) {
   chat_history <- update_history(chat_history, user_message = message, response = response)
   response}
   ) 
-
   
   output$response <- renderUI({rv()}) 
-  
-  
 }
 
 # Run the application 
