@@ -1,4 +1,4 @@
-![logo](logo.png)
+![Alt text](cfbapp/www/logo.png)
 
 # College Football Prediction App with Chatbot:
 
