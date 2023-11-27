@@ -1,5 +1,8 @@
 # College Football Prediction App with Chatbot:
 
+### App Link:
+https://jsandy.shinyapps.io/cfbapp/
+
 ### Current Version Notes:
 * IMPORTANT: The API which this app relies on is currently having issues. The script, `01 get games bets and ranks.R`, will fail until this issue is resolved. 
 
