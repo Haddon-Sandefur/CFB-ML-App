@@ -1,3 +1,4 @@
+![Alt text](logo.png)
 # College Football Prediction App with Chatbot:
 
 ### App Link:
