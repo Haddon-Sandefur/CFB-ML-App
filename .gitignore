@@ -2,3 +2,4 @@
 *.dcf
 /rsconnect/
 /cfbapp/req.R
+*.rds

@@ -91,11 +91,12 @@ ui <- fluidPage(
     ),
   
   # Title
-  titlePanel(title=div(img(src="icon.png", height = "100px", width = "100px"), img(src="logo.png", height = "100px"))),
+  titlePanel(title=div(img(src="icon.png", height = "150x", width = "150px"), img(src="logo.png", height = "100px"))),
   
   # Subtitle
   h4('2023 College Football Matchup Simulator - NOTE: THE API WHICH THIS APP DEPENDS ON HAS BEEN DOWN, MODEL ONLY FUNCTIONAL THROUGH WEEK 8'),
   h5('Please click the "Submit" button to get started!'),
+  h6('Exhausted Georgia Southern Fan Update'),
   
   # Side bar with inputs:
   sidebarLayout(
