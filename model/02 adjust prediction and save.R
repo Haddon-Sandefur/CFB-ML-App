@@ -12,11 +12,11 @@ df <- read.csv(paste("downstream/gamesModifiedModel", year, ".csv", sep = ""))
 df$pointsDiffPredAdj <- df$pointsDiffPred - .5*df$spreadAvg
 
 # RMSE
-checks <- paste("Overall RMSE of Sportbook Spread (Untrained Data, Week > 10):", 
+checks <- paste("Overall RMSE of Sportbook Spread (Untrained Data):", 
                 round(rmse(df %>% filter(week > max(week) -1), pointsDiff, spreadInverted)[3], digits = 2),
-               "Overall RMSE of Unadjusted Prediction (Untrained Data, Week > 10):", 
+               "Overall RMSE of Unadjusted Prediction (Untrained Data):", 
                 round(rmse(df %>% filter(week > max(week) -1), pointsDiff, pointsDiffPred)[3], digits = 2),
-               "Overall RMSE of Adjusted Prediction (Untrained Data, Week > 10):", 
+               "Overall RMSE of Adjusted Prediction (Untrained Data):", 
                 round(rmse(df %>% filter(week > max(week) -1), pointsDiff, pointsDiffPredAdj)[3], digits = 2),
                sep = "\n"
                )
@@ -44,12 +44,7 @@ df2 <- df %>%
        ungroup()
      
 # Wow... beats the spread prediction by 2 points on average
-cat(paste(
-    "Final Symmetric Prediction RMSE (Untrained Data, Week > current):",
-    round(rmse(df2 %>% filter(week > max(week)-1), pointsDiff, pointsDiffPredFinal)[3], digits = 2),
-    sep = "\n"
-         )
-)
+paste("Final Symmetric Prediction RMSE (Untrained Data, Week > current):", round(rmse(df2 %>% filter(week > max(week)-1), pointsDiff, pointsDiffPredFinal)[3], digits = 2))
 
 # Quick Spread coverage evaluator
 df3 <- df2 %>% 

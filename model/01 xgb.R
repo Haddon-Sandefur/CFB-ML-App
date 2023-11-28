@@ -59,8 +59,8 @@ df2 <- df2 %>% select(pointsDiff,
 # be similar to last year's (Spread Predictions ~ 52-56% Accurate.
 # Win Loss Predictions ~ 76% Accurate)
 testWeeks <- max(df2$week)
-dfTrain <- df2 #%>% filter(!(week %in% testWeeks)) %>% select(-week)
-dfTest  <- df2 #%>% filter(week %in% testWeeks)    %>% select(-week)
+dfTrain <- df2 %>% filter(!(week %in% testWeeks)) %>% select(-week)
+dfTest  <- df2 %>% filter(week %in% testWeeks)    %>% select(-week)
 rm("df2")
 
 # Model Set-Up with Tidymodels =================================================
@@ -196,9 +196,6 @@ dfPred                                                            %>%
 
 # Final Steps: Rename some variables and save everything:
 dfPred <- dfPred %>%  rename(pointsDiffPred = .pred) %>% relocate(pointsDiffPred, .after = pointsDiff)
-
-# Save Model Specs:
-saveRDS(xgbFinal, "xgbModelSpecs.rds")
 
 # Save Data:
 write.csv(dfPred, paste("downstream/gamesModifiedModel", year, ".csv", sep = ""))

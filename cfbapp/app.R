@@ -94,7 +94,7 @@ ui <- fluidPage(
   titlePanel(title=div(img(src="icon.png", height = "150x", width = "150px"), img(src="logo.png", height = "100px"))),
   
   # Subtitle
-  h4('2023 College Football Matchup Simulator - NOTE: THE API WHICH THIS APP DEPENDS ON HAS BEEN DOWN, MODEL ONLY FUNCTIONAL THROUGH WEEK 8'),
+  h4('2023 College Football Matchup Simulator'),
   h5('Please click the "Submit" button to get started!'),
   h6('Exhausted Georgia Southern Fan Update'),
   
@@ -124,14 +124,13 @@ ui <- fluidPage(
       
       code("Info:"),
       
-      p("The predictions you see use an XGBoost model for the output. Last year in the late season, the accuracy of wins/losses sat at about 76%, whereas the
-        accuracy of the Cover Prediction sat at about 56%. All FBS-FCS and FCS-FCS matchup stats are excluded and do not contribute to averages. Predictions
-        tend to be more conservative, so if you pit a really bad team against a really good team, the predicted score differential will likely be less than 30.
-        This app is free and made for fun. I am not responsible for any financial losses/gains nor gambling decisions impacting or carried out by users.")
+      p("The predictions you see use an XGBoost model for the output. This app is free and made for fun. 
+        I am not responsible for any financial losses/gains nor gambling decisions impacting or carried out by users.")
     ),
 
   ),
-  
+  h4("\n"),
+  code("AI Chat:"),
   p(uiOutput("response"))
 )
 
@@ -201,25 +200,28 @@ server <- function(input, output, session) {
   )
   
   # Grab output of the prediction dataframe:
-  output$predictionsTable <- renderTable(
-    expr = {predictions()},
-    striped  = T,
-    bordered = T)
+  output$predictionsTable <- 
+    renderTable(
+      expr = {predictions()},
+      striped  = T,
+      bordered = T)
   
   #Grab output of the plot.
-  output$comparePlot <- renderPlot(
-    expr = {cfbplot()},  bg="transparent"
-  )
+  output$comparePlot <- 
+    renderPlot(
+      expr = {cfbplot()},  bg="transparent")
   
   # Obtain GPT Response
-  rv <- eventReactive(input$chat, {
-  chat_history <- NULL
-  message <-  input$prompt
-  response <- chat(message,
-                     history = chat_history,
-                     system_prompt = "general")
-  chat_history <- update_history(chat_history, user_message = message, response = response)
-  response}
+  rv <- 
+    eventReactive(input$chat, {
+      chat_history <- NULL
+      message <-  input$prompt
+      if(is.null(message) | message == ""){
+        response <- "Please type something!"
+      }else{
+        response <- chat(message, history = chat_history, system_prompt = "general")
+      }
+   }
   ) 
   
   output$response <- renderUI({rv()}) 
