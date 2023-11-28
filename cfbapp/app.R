@@ -112,7 +112,7 @@ ui <- fluidPage(
       actionButton("submitBtn", "Submit"),
       
       # Textbox for GPT interaction
-      textAreaInput("prompt", label = "Chat with a depressed AI Auburn Fan", width = "500px"),
+      textAreaInput("prompt", label = "Chat with an AI Georgia Southern Fan", width = "500px"),
       actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary")
     ),
     
