@@ -6,9 +6,7 @@
 https://jsandy.shinyapps.io/cfbapp/
 
 ### Current Version Notes:
-> [!IMPORTANT]
-> The API which this app relies on is currently having issues. The script, `01 get games bets and ranks.R`, will fail until this issue is resolved. 
-
+* XGB Model trained through Week 11.
 * Added chatbot to application. Currently, this chatbot does not have the ability to utilize chat history nor interpret results via the ML model. Future updates seek to address this.
 
 ### Purpose:
