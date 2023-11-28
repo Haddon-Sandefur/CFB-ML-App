@@ -1,5 +1,5 @@
 *.csv
 *.dcf
+*.rds
 /rsconnect/
 /cfbapp/req.R
-*.rds
