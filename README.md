@@ -9,7 +9,7 @@ https://jsandy.shinyapps.io/cfbapp/
 * XGB Model trained through Week 11.
 * Added chatbot to application.
 
->[!NOTE]:
+>[!NOTE]
 >Currently, this chatbot does not have the ability to utilize chat history nor interpret results via the ML model. Future updates seek to address this.
 
 ### Purpose:
