@@ -7,7 +7,10 @@ https://jsandy.shinyapps.io/cfbapp/
 
 ### Current Version Notes:
 * XGB Model trained through Week 11.
-* Added chatbot to application. Currently, this chatbot does not have the ability to utilize chat history nor interpret results via the ML model. Future updates seek to address this.
+* Added chatbot to application.
+
+>[!NOTE]:
+>Currently, this chatbot does not have the ability to utilize chat history nor interpret results via the ML model. Future updates seek to address this.
 
 ### Purpose:
 This project acts as a start-to-finish pipeline of securing college football data from multiple sources, training an XGBoost model for point differential predictions, and creating an app which users can intuitively experiment with the model.
@@ -24,3 +27,7 @@ Execute `00 runner.R` to pull/scrape data and train the models. Data will be sav
 * Chatbot ability to read data and ML results.
 * Dockerizing the application.
 * Flowchart for ths README.md
+
+#### Coming later:
+* Adding model metrics to app with new layout.
+* Experimentation with non-tree based models and potential inclusion.
