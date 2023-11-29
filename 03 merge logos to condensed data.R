@@ -30,5 +30,5 @@ df2 <- left_join(df, logos, by = "school", relationship = "many-to-one") %>% sel
 write.csv(df2, paste("downstream/gamesModifiedModel", year, "CondensedLogos.csv", sep = ""))
 write.csv(df2, paste("cfbapp/gamesModifiedModel", year, "CondensedLogos.csv", sep = ""))
 
-# Clear Memory
-rm(list = ls())
+# Remove non-used data:
+rm(list = setdiff(ls(), c("year", "runnerPath", "runModels")))

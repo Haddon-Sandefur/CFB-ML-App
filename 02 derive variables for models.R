@@ -12,36 +12,36 @@ library(tidyverse)
 setwd(runnerPath)
 
 # Read in data and sort
-games <- read.csv(paste("downstream/games", year, ".csv", sep = "")) %>% arrange(rowId) 
-# NOTE. R v 4.3.1 will coerce certain Latin characters to unicode. Please use R version 4.1.1 (works fine).
+work <- read.csv(paste("downstream/games", year, ".csv", sep = "")) %>% arrange(rowId) 
+work$rowId <- as.character(work$rowId)
+work       <- work %>% relocate(rowId, .before = gameId )
 
-games$rowId <- as.character(games$rowId)
-games <- games %>% relocate(rowId, .before = gameId )
-
-# Save as "work"
-work  <- games
+# Create copy for later validity checks:
+games <- work
 
 # Replacing NA with zeros everywhere (I believe NAs occur in many situations where events do not occur)
 work[is.na(work)] <- 0
 
 # Add some betting information variables: ===============================================================
 # Make some mutations regarding the betting lines:
-work <- work %>% mutate(favoredTeam = if_else(gsub("\\W*\\d*\\D*\\d$", "", formattedSpread) == school, 1, 0),
-                        spread      = if_else(favoredTeam == 1, -abs(spread),     abs(spread)),
-                        spreadOpen  = if_else(favoredTeam == 1, -abs(spreadOpen), abs(spreadOpen)),
-                        moneyline   = ifelse(school       == homeTeam, homeMoneyline,  awayMoneyline))
+work <- 
+  work %>% 
+    mutate(favoredTeam = if_else(gsub("\\W*\\d*\\D*\\d$", "", formattedSpread) == school, 1, 0),
+           spread      = if_else(favoredTeam == 1, -abs(spread),     abs(spread)),
+           spreadOpen  = if_else(favoredTeam == 1, -abs(spreadOpen), abs(spreadOpen)),
+           moneyline   = ifelse(school       == homeTeam, homeMoneyline,  awayMoneyline))
 
 # Take Cumulative Means ==================================================================================
-workAvg <- work %>% 
-  group_by(school) %>% 
-  mutate_if(is.numeric, cummean) %>% 
-  ungroup()
+workAvg <- 
+  work %>% 
+    group_by(school) %>% 
+    mutate(across(where(is.numeric), \(X) cummean(X))) %>% 
+    ungroup()
 
 # Round Everything 
-workAvg <- workAvg %>% mutate(across(where(is.numeric), round, 3))
+workAvg <- workAvg %>% mutate(across(where(is.numeric), \(X) round(X, 3)))
 workAvg <- workAvg %>% {bind_cols(select_at(., "rowId"),
                                   select_if(., is.numeric))}
-
 # Rename Colnames with "Avg" suffix at the end
 colnames(workAvg)[-1] <- paste(colnames(workAvg)[-1], "Avg", sep = "")
 
@@ -49,7 +49,7 @@ colnames(workAvg)[-1] <- paste(colnames(workAvg)[-1], "Avg", sep = "")
 work2 <- left_join(work, workAvg, by = "rowId", relationship = "one-to-one")
 
 # Verify integrity of original sort
-if(!all(work2$rowId == games$rowId)){
+if(!all(work2$rowId == work$rowId)){
   stop("rowId column not equal to original data... check sort")
 }else{
     work2 <- work2 %>% select(-gameIdAvg, -weekAvg)
@@ -57,17 +57,16 @@ if(!all(work2$rowId == games$rowId)){
 
 # Lag all numeric variables ==============================================================================
 # Lag everything except rowId...keep rowId and numeric results only
-workLag <- work2 %>% 
-  group_by(school) %>%
-  mutate_if(is.numeric, lag) %>% 
-  {bind_cols(select_at(., "rowId"),
-             select_if(., is.numeric))} %>% 
-  ungroup() %>% 
-  select(-`school...1`, -`school...3`)
+workLag <- 
+  work2 %>% 
+    group_by(school) %>%
+    mutate(across(where(is.numeric), \(X) lag(X))) %>% 
+    {bind_cols(select_at(., "rowId"),select_if(., is.numeric))} %>% 
+    ungroup() %>% 
+    select(-`school...1`, -`school...3`)
 
 # Change names of columns except rowId
 colnames(workLag)[-1] <- paste(colnames(workLag[-1]),"Lag", sep = "")
-
 
 # Merge back to data
 work2 <- left_join(work2, workLag, by = "rowId", relationship = "one-to-one")
@@ -76,9 +75,9 @@ work2 <- left_join(work2, workLag, by = "rowId", relationship = "one-to-one")
 # Group by game and apply differences to numeric variables
 work3 <- work2 %>% arrange(gameId) # <- IMPORTANT SORT, DO NOT CHANGE.
 
-workDiff  <- work3 %>%
-            {bind_cols(select_at(.,"rowId"),
-                       select_if(., is.numeric))}
+workDiff <- 
+  work3 %>%
+    {bind_cols(select_at(.,"rowId"), select_if(., is.numeric))} 
 
 # Create function for this operation:
 diffFunc <- function(data){
@@ -94,12 +93,12 @@ diffFunc <- function(data){
 workDiffTemp <- workDiff %>% select(-rowId)
 workDiffKey  <- workDiff %>% select(rowId)
 
-workDiffTemp <- workDiffTemp  %>% 
-  group_by(gameId)            %>% 
-  group_modify(~ diffFunc(.x))%>%
-  ungroup()                   %>%
-  arrange(gameId)
-
+workDiffTemp <- 
+  workDiffTemp  %>% 
+    group_by(gameId) %>% 
+    group_modify(~ diffFunc(.x)) %>%
+    ungroup() %>%
+    arrange(gameId)
 
 # Rename Colnames with "Diff" suffix at the end
 colnames(workDiffTemp)[-1] <- paste(colnames(workDiffTemp)[-1], "Diff", sep = "")
@@ -107,14 +106,11 @@ colnames(workDiffTemp)[-1] <- paste(colnames(workDiffTemp)[-1], "Diff", sep = ""
 # CBIND workDiffTemp and workDiffKeys together overwriting original workDiff
 workDiff <- cbind(workDiffKey, workDiffTemp)
 
-
 # Merge back to working
 work3 <- left_join(work3, workDiff, by = "rowId", relationship = "one-to-one") %>% arrange(as.numeric(rowId)) %>% select(-gameId.y) %>% rename(gameId = gameId.x)
 
 # Rename data and clear memory:
 final <- work3
-rm(list = c("work", "work2", "work3", "workAvg", "workDiff", "workDiffTemp", "workDiffKey", "workLag", "games"))
-
 final$rowId <- as.numeric(final$rowId)
 
 # Add a variable to denote whether a team covered the spread or not:
@@ -134,4 +130,4 @@ final <- final %>% mutate(spreadInverted = -1*spread)
 write.csv(final, paste("downstream/gamesModified", year, ".csv", sep = ""), row.names = F)
 
 # Remove non-used data:
-rm(list = c("bets", "cbsRankings", "html"))
+rm(list = setdiff(ls(), c("year", "runnerPath", "runModels")))

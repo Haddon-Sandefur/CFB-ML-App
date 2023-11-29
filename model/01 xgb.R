@@ -53,14 +53,9 @@ df2 <- df2 %>% select(pointsDiff,
                       )
 
 # Split train and test set:
-# TEMPORARY: Make Train and Test Sets Equivalent. 
-# We want a full train on all available data.
-# A rudementary test run suggests performance metrics will
-# be similar to last year's (Spread Predictions ~ 52-56% Accurate.
-# Win Loss Predictions ~ 76% Accurate)
 testWeeks <- max(df2$week)
-dfTrain <- df2 %>% filter(!(week %in% testWeeks)) %>% select(-week)
-dfTest  <- df2 %>% filter(week %in% testWeeks)    %>% select(-week)
+dfTrain   <- df2 %>% filter(!(week %in% testWeeks)) %>% select(-week)
+dfTest    <- df2 %>% filter(week %in% testWeeks)    %>% select(-week)
 rm("df2")
 
 # Model Set-Up with Tidymodels =================================================
@@ -129,69 +124,74 @@ xgbTuned <- tune::tune_grid(
 
 xgbTuned %>%
   tune::show_best(metric = "rmse") %>%
-  knitr::kable()
+  knitr::kable() %>% 
+  print()
 
 ## Extract best params
-xgbBestParams <- xgbTuned %>%
+xgbBestParams <- 
+  xgbTuned %>%
   tune::select_best("rmse")
 
-knitr::kable(xgbBestParams)
+knitr::kable(xgbBestParams) %>% print()
 
-xgbFinal <- xgbModel %>% 
+xgbFinal <- 
+  xgbModel %>% 
   finalize_model(xgbBestParams)
-
 #---------------------------------------------------------------
 
 # Step 5: Train Model, evaluate Train RMSE
 trainProcessed <- bake(preprocessingRecipe,  new_data = dfTrain)
 
 # Create fit.
-trPred <- xgbFinal                                             %>%
-          fit(formula = pointsDiff ~ ., data = trainProcessed)                              
+trPred <- 
+  xgbFinal %>%
+    fit(formula = pointsDiff ~ ., data = trainProcessed)                              
 
 # Save fit for future predictions.
 saveRDS(trPred, "model/xgbModelParsnip.rds")
 saveRDS(trPred, "cfbapp/xgbModelParsnip.rds")
 
-trPred <- trPred                                               %>% 
-          predict(new_data = trainProcessed)                   %>% # Make Predictions
-          bind_cols(dfTrain)                                       # Bind processed predictions to og train data.
+trPred <- 
+  trPred  %>% 
+    predict(new_data = trainProcessed) %>% # Make Predictions
+    bind_cols(dfTrain)                     # Bind processed predictions to og train data.
 
 
-trPred                                                            %>%
-  yardstick::metrics(pointsDiff, .pred)                           %>%
+trPred %>%
+  yardstick::metrics(pointsDiff, .pred) %>%
   mutate(.estimate = format(round(.estimate, 2), big.mark = ",")) %>%
-  knitr::kable(format = "pipe", caption = "Train Set")
-
+  knitr::kable(format = "pipe", caption = "Train Set") %>% 
+  print()
 
 # Step 6: Test Model, evaluate Test RMSE
 testProcessed <- bake(preprocessingRecipe,  new_data = dfTest)
 
-tsPred <- xgbFinal                                             %>%
-          fit(formula = pointsDiff ~ ., data = trainProcessed) %>% # Fit Model... again 
-          predict(new_data = testProcessed)                    %>% # Make Predictions
-          bind_cols(dfTest)                                        # Bind processed predictions to og test data.
+tsPred <- 
+  xgbFinal %>%
+    fit(formula = pointsDiff ~ ., data = trainProcessed) %>%   # Fit Model... again 
+      predict(new_data = testProcessed) %>%                    # Make Predictions
+      bind_cols(dfTest)                                        # Bind processed predictions to og test data.
 
-
-tsPred                                                            %>%
-  yardstick::metrics(pointsDiff, .pred)                           %>%
+tsPred %>%
+  yardstick::metrics(pointsDiff, .pred) %>%
   mutate(.estimate = format(round(.estimate, 2), big.mark = ",")) %>%
   knitr::kable(format = "pipe", caption = "Test Set")
 
 # Step 7: Predict all games and add predictions to original dataset.
 dfProcessed <- bake(preprocessingRecipe, new_data = df)
 
-dfPred <- xgbFinal                                             %>%
-          fit(formula = pointsDiff ~ ., data = trainProcessed) %>% # Fit Model ... again
-          predict(new_data = dfProcessed)                      %>% # Make Predictions
-          bind_cols(df)                                            # Bind processed predictions to all data.
+dfPred <- 
+  xgbFinal %>%
+    fit(formula = pointsDiff ~ ., data = trainProcessed) %>% # Fit Model ... again
+    predict(new_data = dfProcessed)  %>%                     # Make Predictions
+    bind_cols(df)                                            # Bind processed predictions to all data.
 
 
-dfPred                                                            %>%
-  yardstick::metrics(pointsDiff, .pred)                           %>%
+dfPred %>%
+  yardstick::metrics(pointsDiff, .pred) %>%
   mutate(.estimate = format(round(.estimate, 2), big.mark = ",")) %>%
-  knitr::kable(format = "pipe", caption = "Final Data")
-
+  knitr::kable(format = "pipe", caption = "Final Data") %>% 
+  print()
 #============================================================================
 
 # Final Steps: Rename some variables and save everything:
