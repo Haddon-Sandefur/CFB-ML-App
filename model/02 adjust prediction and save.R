@@ -1,9 +1,5 @@
 # Purpose:
-# Test Prediction Perfomance and modify predictions to be symmetric per game
-
-# Libraries
-library(tidyverse)
-library(tidymodels)
+# Test Prediction Performance and modify predictions to be symmetric per game
 
 # Data
 df <- read.csv(paste("downstream/gamesModifiedModel", year, ".csv", sep = ""))
@@ -44,8 +40,8 @@ df2 <-
     select(-helper, -helper2, -helper3) %>% 
     ungroup()
      
-# Wow... beats the spread prediction by 2 points on average
 paste("Final Symmetric Prediction RMSE (Untrained Data, Week > current):", round(rmse(df2 %>% filter(week > max(week)-1), pointsDiff, pointsDiffPredFinal)[3], digits = 2))
+cat('\n')
 
 # Quick Spread coverage evaluator
 df3 <- 
@@ -58,9 +54,11 @@ df3 <-
     filter(week > max(week) -1)
 
 # Cover Performance:
+cat('Confusion Matrix for Cover Predictions:', '\n')
 print(caret::confusionMatrix(as.factor(df3$coverPred), as.factor(df3$cover), positive = "1"))
 
 # Win Loss Performance:
+cat('Confusion Matrix for Win/Loss Predictions:', '\n')
 print(caret::confusionMatrix(as.factor(df3$winPred), as.factor(df3$win), positive = "1"))
 
 df4 <- 

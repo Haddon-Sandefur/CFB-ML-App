@@ -5,10 +5,7 @@
 # any two teams, by week.
 ######################################
 
-# Libraries
-library(tidyverse)
-library(tidymodels)
-
+# Data needed in the below function:
 df  <- read.csv(paste("gamesModifiedModel2023Condensed.csv")) 
 
 # Write function:

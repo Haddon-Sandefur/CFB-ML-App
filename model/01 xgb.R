@@ -5,12 +5,6 @@
 # predict wins.
 ########################
 
-# Libraries
-library(tidyverse)
-library(magrittr)
-library(xgboost)
-library(tidymodels)
-
 # Data Year
 year = year
 

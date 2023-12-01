@@ -1,4 +1,14 @@
-# Set Directory to script path.
+# Dependencies:
+library(tidyverse)
+library(cfbfastR)
+library(oddsapiR)
+library(janitor)
+library(stringdist)
+library(magrittr)
+library(xgboost)
+library(tidymodels)
+
+#Set Directory to script path.
 runnerPath <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(runnerPath)
 

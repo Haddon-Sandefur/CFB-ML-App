@@ -5,9 +5,6 @@
 # Get lagged differences, lagged averages, lagged results.
 ########################
 
-# Library
-library(tidyverse)
-
 # Set working directory to runner path
 setwd(runnerPath)
 

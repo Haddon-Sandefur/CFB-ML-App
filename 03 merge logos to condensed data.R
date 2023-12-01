@@ -5,10 +5,6 @@
 ##################################################
 setwd(runnerPath)
 
-# Libraries
-library(tidyverse)
-library(cfbfastR)
-
 # Assert that the condensed file exists. If it does, that means the model files have been ran.
 if(!file.exists(paste("downstream/gamesModifiedModel", year, "Condensed.csv", sep = ""))){
   stop("The required data does not exist. Ensure that scripts in the 'models' folder have been ran in sequence.")

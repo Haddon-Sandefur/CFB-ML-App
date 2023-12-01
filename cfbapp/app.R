@@ -111,9 +111,6 @@ ui <- fluidPage(
                      selected = newNamesLimited[74]),
       actionButton("submitBtn", "Submit"),
       
-      # Textbox for GPT interaction
-      textAreaInput("prompt", label = "Chat with an AI Georgia Southern Fan", width = "500px"),
-      actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary")
     ),
     
     # Body
@@ -125,7 +122,11 @@ ui <- fluidPage(
       code("Info:"),
       
       p("The predictions you see use an XGBoost model for the output. This app is free and made for fun. 
-        I am not responsible for any financial losses/gains nor gambling decisions impacting or carried out by users.")
+        I am not responsible for any financial losses/gains nor gambling decisions impacting or carried out by users."),
+      
+      # Textbox for GPT interaction
+      textAreaInput("prompt", label = "Chat with an AI Georgia Southern Fan!", width = "500px"),
+      actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary")
     ),
 
   ),

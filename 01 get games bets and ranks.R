@@ -1,17 +1,12 @@
-library(tidyverse)
-library(cfbfastR)
-library(oddsapiR)
-library(janitor)
-library(stringdist)
-
-
 # Set working directory to runner path
 setwd(runnerPath)
 
+# Source the cfb week helper
+source("helpers/cfb week.R")
 
 # Append all weeks of ESPN game-by-game stats.
 games <- list()
-for (i in 1:12) {
+for (i in 1:(returnCfbWeek() - 1)) {
   games[[i]] <- cfbfastR::cfbd_game_team_stats(year = year, week = i)
 }
 
@@ -48,7 +43,7 @@ games <- games %>% mutate(penaltyYards    = penaltyYards,
 rm(list = c("att", "perc", "penaltyYards", "penaltyYardsOpp"))
 
 # Get CBS Sports CFB Rankings
-source("cbs pull rankings.R")
+source("helpers/cbs pull rankings.R")
 Sys.sleep(3)
 
 # Merge CBS CFB Rankings to Team Info Data
