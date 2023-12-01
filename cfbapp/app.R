@@ -1,12 +1,3 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 # Libraries
 library(shiny)
 library(tidyverse)
@@ -22,19 +13,20 @@ dfl <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>%
        filter(classification == "fbs")                      %>%  
        select(school, opponent, week, matches("Avg"), -matches("Lag"))
 
-# Quick Louisiana Tech Fix - two week 1 games so I'm just going to drop the FIU one:
-# dfl <- dfl[-86,]
-
+# Rename some variables
 newNames <- snakecase::to_any_case(colnames(dfl), case = "snake")
 newNames[which(newNames == "cbs_rank_avg")] <- "cbs_rank"
 newNames[which(newNames == "cbs_rank_opp_avg")] <- "cbs_rank_opp"
-#newNames <- gsub("_lag", "", newNames)
 newNamesLimited <- sort(newNames[-c(1,2,3)])
+
+# Team Names for user input
 teamNames <- sort(unique(dfl$school))
+
+# Requirements
 source("app helper.R")
 source("req.R")
 
-# Create the Shiny UI and Server components
+# FRONTEND ===================================================================================================
 ui <- fluidPage(
   title = "Rascal Sports - CFB Prediction Model",
 
@@ -116,25 +108,24 @@ ui <- fluidPage(
     # Body
     mainPanel(
       tableOutput("predictionsTable"),
-      
       plotOutput("comparePlot"),
-      
       code("Info:"),
-      
       p("The predictions you see use an XGBoost model for the output. This app is free and made for fun. 
         I am not responsible for any financial losses/gains nor gambling decisions impacting or carried out by users."),
       
       # Textbox for GPT interaction
+      code("Chat Box:"),
       textAreaInput("prompt", label = "Chat with an AI Georgia Southern Fan!", width = "500px"),
       actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary")
     ),
 
   ),
   h4("\n"),
-  code("AI Chat:"),
+  code("AI Response:"),
   p(uiOutput("response"))
 )
 
+#BACKEND =====================================================================================================
 server <- function(input, output, session) {
   
   # Return a table with the predictions of the selected teams.
