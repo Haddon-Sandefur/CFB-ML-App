@@ -2,7 +2,7 @@
 FROM rocker/r-ver:4.3.1
 
 # Create Directory for image
-WORKDIR C:Users\hadsa\OneDrive\Documents\GitHub\CFB-ML-App
+WORKDIR \OneDrive\Documents\GitHub\CFB-ML-App
 
 # Install necessary R packages
 RUN R -e "install.packages('tidyverse',dependencies=TRUE, repos='http://cran.rstudio.com/')"
@@ -21,7 +21,8 @@ RUN R -e "install.packages('remotes',dependencies=TRUE, repos='http://cran.rstud
 RUN R -e "install.packages('caret',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('Kazink36/cfbplotR')"
 
+# Copy all files
 COPY . .
 
-# Specify the command to run when the container starts
+# Run application
 CMD R -e "source('00 runner.R')"

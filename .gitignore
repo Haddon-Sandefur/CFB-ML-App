@@ -3,3 +3,4 @@
 *.rds
 /rsconnect/
 /cfbapp/req.R
+Dockerfile
