@@ -185,7 +185,6 @@ server <- function(input, output, session) {
             theme(axis.text.y = element_cfb_logo(size = 3)) +
             theme(axis.text.x = element_text(size = 20)) +
             theme(axis.title=element_text(size=20)) +
-
             ylab("") +
             xlab(to_any_case(variable, "title")) 
    }

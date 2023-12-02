@@ -2,6 +2,10 @@ if(!require(lubridate)){
   install.packages("lubridate")
 }
 
+if(Sys.Date() > ymd('24-09-6')){
+  stop("Time to update the cfb week script!")
+}
+
 # System Date to College Football Week Converstion:
 returnCfbWeek <- function(date){
   
