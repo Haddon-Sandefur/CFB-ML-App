@@ -7,6 +7,7 @@ library(snakecase)
 library(bslib)
 library(xgboost)
 library(httr2)
+library(jsonlite)
 
 # Data:
 dfl <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
@@ -17,7 +18,11 @@ dfl <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>%
 newNames <- snakecase::to_any_case(colnames(dfl), case = "snake")
 newNames[which(newNames == "cbs_rank_avg")] <- "cbs_rank"
 newNames[which(newNames == "cbs_rank_opp_avg")] <- "cbs_rank_opp"
-newNamesLimited <- sort(newNames[-c(1,2,3)])
+names(newNames) <- newNames
+
+# Remove Certain things that dont make sense for plotting
+badVars <- c("school", "opponent", "week", "season_avg")
+newNamesLimited <- sort(newNames[-which(newNames %in% badVars)])
 
 # Team Names for user input
 teamNames <- sort(unique(dfl$school))
@@ -93,15 +98,15 @@ ui <- fluidPage(
   # Side bar with inputs:
   sidebarLayout(
     sidebarPanel(
-      selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames[4]),
-      selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames[36]),
-      numericInput("spread", "Home Team's Spread", value = 3, min = -80, max = 80),
-      numericInput("moneyLine1", "Home Team's Moneyline",value = 180, min = -12000, max = 12000),
-      numericInput("moneyLine2", "Away Team's Moneyline",value = -200, min = -12000, max = 12000),
+      selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames[35]),
+      selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames[3]),
+      numericInput("spread", "Home Team's Spread", value = -5, min = -80, max = 80),
+      numericInput("moneyLine1", "Home Team's Moneyline",value = -195, min = -12000, max = 12000),
+      numericInput("moneyLine2", "Away Team's Moneyline",value = 165, min = -12000, max = 12000),
       numericInput("overUnder",  "Over/Under",value = 45, min = 0, max = 180),
       selectizeInput("plotVar", "Bar Chart Variable", choices = newNamesLimited, multiple = FALSE,
-                     selected = newNamesLimited[74]),
-      actionButton("submitBtn", "Submit"),
+                     selected = newNamesLimited["total_yards_avg"]),
+      #actionButton("submitBtn", "Submit")
       
     ),
     
@@ -110,16 +115,15 @@ ui <- fluidPage(
       tableOutput("predictionsTable"),
       plotOutput("comparePlot"),
       code("Info:"),
-      p("The predictions you see use an XGBoost model for the output. This app is free and made for fun. 
-        I am not responsible for any financial losses/gains nor gambling decisions impacting or carried out by users."),
-      
-      # Textbox for GPT interaction
-      code("Chat Box:"),
-      textAreaInput("prompt", label = "Chat with an AI Georgia Southern Fan!", width = "500px"),
-      actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary")
+      p("The predictions you see use an XGBoost model for the output. Using real matchups with real sportbook info
+        will yield more accurate prediction. This app is free and made for fun. I am not responsible for any financial losses/gains nor gambling decisions impacting or carried out by users.")
     ),
 
   ),
+  # Textbox for GPT interaction
+  code("Chat Box:"),
+  textAreaInput("prompt", label = "Chat with an AI Georgia Southern Fan!", width = "500px"),
+  actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary"),
   h4("\n"),
   code("AI Response:"),
   p(uiOutput("response"))
@@ -127,9 +131,11 @@ ui <- fluidPage(
 
 #BACKEND =====================================================================================================
 server <- function(input, output, session) {
+  # Initialize this for later:
+  pTable <- reactiveVal(NULL)
   
   # Return a table with the predictions of the selected teams.
-  predictions <- eventReactive(input$submitBtn, {
+  predictions <- reactive({
     team1 <-  input$team1
     team2 <-  input$team2
     spread <- input$spread
@@ -137,12 +143,16 @@ server <- function(input, output, session) {
     moneyLine2 <- input$moneyLine2
     overUnder  <- input$overUnder
     
-  # Return predictMatchup dataframe and pull relevant details:
-    if (!is.null(team1) && !is.null(team2)) {
-      predictMatchup(team1, 
+    # List for if statement below:
+    argList <- list(team1, team2, spread, moneyLine1, moneyLine2, overUnder)
+ 
+    # Return predictMatchup dataframe and pull relevant details:
+    if (!(list(NULL) %in% argList) & !(list(NA) %in% argList) & !(list("") %in% argList)) {
+      pTable_data <- 
+        predictMatchup(team1, 
                      team2, 
                      year = 2023, 
-                     manualBooks = T, 
+                     manualBooks = TRUE, 
                      spreadTeam1 = spread, 
                      moneylineTeam1 = moneyLine1, 
                      moneylineTeam2 = moneyLine2, 
@@ -159,12 +169,32 @@ server <- function(input, output, session) {
                `Win Prediction` = winPred,
                `Cover Prediction` =  coverPred,
                Spread = spread)
+      
+      # Extra data for chatbot to look at:
+      extraInfo <-
+        dfl %>% 
+          filter((school == team1 | school == team2) & week == max(week)) %>%
+          select(school, totalYardsAvg, totalYardsAllowedAvg, turnoversAllowedAvg, yardsPerRushAttemptAvg,
+                 yardsPerRushAttemptAllowedAvg, yardsPerPassAvg, yardsPerPassAllowedAvg, tacklesForLossAvg, week) %>% 
+          mutate(across(where(is.numeric), \(X) round(X, digits = 1))) %>% 
+          janitor::clean_names(., "sentence")
+      
+      # This is what the chatBot will see
+      feedToChatBot <- left_join(pTable_data,extraInfo, by = "School")
+      
+      # Initialize reactive variable.
+      pTable(paste('Table:', toJSON(feedToChatBot), 'User Input:'))
+      pTable_data
+    }else{
+      raiseMe <- data.frame("Important" = "Please ensure you completely fill out the side boxes!")
+      pTable(paste('Table:', toJSON(raiseMe), 'User Input:'))
+      raiseMe
      }
     }
   )
   
   # Make some CFB comparison plots.
-  cfbplot <- eventReactive(input$submitBtn, {
+  cfbplot <- reactive({
     team1 <-  input$team1
     team2 <-  input$team2
     variable <- input$plotVar
@@ -201,12 +231,13 @@ server <- function(input, output, session) {
   output$comparePlot <- 
     renderPlot(
       expr = {cfbplot()},  bg="transparent")
-  
+
   # Obtain GPT Response
   rv <- 
     eventReactive(input$chat, {
       chat_history <- NULL
-      message <-  input$prompt
+      message <-  paste(pTable(), input$prompt)
+      print(message)
       if(is.null(message) | message == ""){
         response <- "Please type something!"
       }else{

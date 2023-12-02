@@ -138,7 +138,7 @@ predictMatchup <- function(team1, team2, manualBooks = FALSE, spreadTeam1, money
 # https://github.com/JamesHWade/r-chatbot/blob/master/chatbot/helper.R
 chat <- function(user_message, 
                  history = NULL,
-                 system_prompt = c("general", "code"),
+                 system_prompt = c("general"),
                  api_key = OPENAI_API_KEY) {
   system   <- get_system_prompt(system_prompt)
   prompt   <- prepare_prompt(user_message, system, history)
@@ -162,12 +162,10 @@ chat <- function(user_message,
   openai_chat_response$choices$message$content
 }
 
-get_system_prompt <- function(system = c("general", "code")) {
+get_system_prompt <- function(system = c("general")) {
   rlang::arg_match(system)
   instructions <- 
-    switch(system,
-           "general" = PROMPT,
-           "code"    = "You are a helpful chat bot that answers questions for an R programmer working in the RStudio IDE.")
+    switch(system, "general" = paste(PROMPT2))
   list(list(role = "system", content = instructions))
 }
 
