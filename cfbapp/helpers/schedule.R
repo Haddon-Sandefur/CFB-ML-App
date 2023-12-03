@@ -19,6 +19,7 @@ schedule <-
 schedule <- 
   schedule %>% 
     gt() %>%
+    tab_options(table.background.color = "transparent") %>% 
     tab_footnote("Book info provided by Bovada") %>% 
     tab_style(style = cell_text(weight = "bold"),
               locations = list(cells_column_labels(), cells_title())) %>%
