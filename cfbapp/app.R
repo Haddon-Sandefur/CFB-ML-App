@@ -19,6 +19,14 @@ dfl <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>%
        filter(classification == "fbs")                      %>%  
        select(school, opponent, week, matches("Avg"), -matches("Lag"))
 
+# Data:
+df2 <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
+  filter(classification == "fbs") %>% 
+  select(school, opponent, week, conference, color, matches("yards"), -matches("Avg"), -matches("Lag"))
+
+conferences <- unique(df2$conference)
+maxWeek <- max(df2$week)
+
 # Rename some variables
 newNames <- snakecase::to_any_case(colnames(dfl), case = "snake")
 newNames[which(newNames == "cbs_rank_avg")] <- "cbs_rank"
@@ -29,6 +37,14 @@ names(newNames) <- newNames
 badVars <- c("school", "opponent", "week", "season_avg")
 newNamesLimited <- sort(newNames[-which(newNames %in% badVars)])
 
+# Rename some variables
+newNames2 <- snakecase::to_any_case(colnames(df2), case = "snake")
+names(newNames2) <- newNames2
+
+# Remove Certain things that dont make sense for plotting
+badVars <- c("school", "opponent", "week", "season_avg", "color", "conference")
+newNamesLimited2 <- sort(newNames2[-which(newNames2 %in% badVars)])
+
 # Team Names for user input
 teamNames <- sort(unique(dfl$school))
 
@@ -38,13 +54,11 @@ source("helpers/req.R")
 source("helpers/schedule.R")
 
 # FRONTEND ===================================================================================================
-ui <- fluidPage(
-  title = "Rascal Sports - CFB Prediction Model",
-
+ui <- page_sidebar(
   
   # Theme Setter
   theme = bs_theme(
-    bg = "#f5c962", fg = "#050505", primary = "#050505",
+    bg = "#ffeaba", fg = "#252625", primary = "#050505",
     base_font = font_google("Space Mono"),
     code_font = font_google("Space Mono")
   ),
@@ -74,11 +88,11 @@ ui <- fluidPage(
         color: #1d24a8;
       }
       body {
-        background-color: #FFFDF9;
+        background-color: #f5c962; # Controls color behind card
         color: #191919;
       }
       .shiny-input-container {
-        color: #474747;
+        color: #474747; # Controls Box selection color
       }
       p {
         color: #050505;
@@ -89,12 +103,27 @@ ui <- fluidPage(
       code {
          font-size: 20px;
          color: #050505;
-      }"
+      }
+      .title-container {
+        background-color: #252625;  
+      }
+      .bslib-sidebar-layout > .collapse-toggle {
+        padding: 50px 0;
+        background-color: #ffeaba;
+      }
+      
+      .bslib-sidebar-layout > .collapse-toggle > .collapse-icon {
+        fill: #252625;
+      }        
+      "
       )
     ),
- 
   # Title
-  titlePanel(title=div(img(src="icon.png", height = "150x", width = "150px"), img(src="logo.png", height = "100px"))),
+  title = div(
+    img(src="icon.png", height = "150x", width = "150px"), 
+    img(src="logo.png", height = "100px"),
+    class = "title-container"),
+  
   
   # Subtitle
   h4('2023 College Football Matchup Simulator'),
@@ -103,43 +132,80 @@ ui <- fluidPage(
   
   
   # Side bar with inputs:
-  sidebarLayout(
-    sidebarPanel(
+  sidebar = sidebar(
       selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames[35]),
       selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames[3]),
       numericInput("spread", "Home Team's Spread", value = -5, min = -80, max = 80),
       numericInput("moneyLine1", "Home Team's Moneyline",value = -195, min = -12000, max = 12000),
       numericInput("moneyLine2", "Away Team's Moneyline",value = 165, min = -12000, max = 12000),
       numericInput("overUnder",  "Over/Under",value = 45, min = 0, max = 180),
-      h4("\n"),
-      actionButton("submitBtn", "Predict"),
-      h4("\n"),
-      h4("\n"),
-      selectizeInput("plotVar", "Bar Chart Variable", choices = newNamesLimited, multiple = FALSE,
-                     selected = newNamesLimited["total_yards_avg"]),
-      
+      h6("\n"),
+      h6("Enter the above information to use the Matchup Predictor and Quick Compare")
+      ),
+  
+  navset_tab(
+    nav_panel(
+      title = "Matchup Predictor",
+      card(
+           card_header("Prediction"), 
+           tableOutput("predictionsTable"),
+           h4("\n"),
+           actionButton("submitBtn", "Predict")
+           ),
+      card(card_header("Chatbot"), 
+           textAreaInput("prompt", label = "Got questions about the prediction result? Ask here:", width = "500px"),
+           actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary"),
+           code("Response:"),
+           p(uiOutput("response"))
+      ),
+      card(fluidRow(gt_output("schedule")))
     ),
     
-    # Body
-    mainPanel(
-      tableOutput("predictionsTable"),
-      plotOutput("comparePlot"),
-      code("Info:"),
-      p("The predictions you see use an XGBoost model for the output. Using real matchups with real sportbook info
-        will yield more accurate prediction. This app is free and made for fun. I am not responsible for any financial losses/gains nor gambling decisions impacting or carried out by users.")
+    nav_panel(
+      title = "Quick Compare", 
+      card(card_header("Game Averages"), 
+           selectizeInput("plotVar", 
+                          "Select Variable", 
+                          choices = newNamesLimited, 
+                          multiple = FALSE,
+                          selected = newNamesLimited["total_yards_avg"]
+                          ),
+           h4(paste("Data through week", maxWeek)),
+           plotOutput("comparePlot")
+           )
     ),
-
+    
+    nav_panel(
+      title = "Team Trends",
+      
+      card(
+           card_header("Pick a Conference and a stat"),
+           div(
+             fluidRow(
+              selectizeInput("conference", "Conference", choices = conferences, multiple = FALSE),
+              selectizeInput("lineVar", "Line Chart Variable", choices = newNamesLimited2, multiple = FALSE, selected = newNamesLimited2["total_yards"])
+            )
+           ),
+           h4(paste("Data through week", maxWeek)),
+           plotOutput("linePlot"),
+           actionButton("plotLine", "Plot")
+           )
+      ),
   ),
-  # Textbox for GPT interaction
-  code("Chat Box:"),
-  textAreaInput("prompt", label = "Chat with an AI Georgia Southern Fan!", width = "500px"),
-  actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary"),
-  h4("\n"),
-  code("AI Response:"),
-  p(uiOutput("response")),
-  code("Game Info:"),
-  fluidRow(gt_output("schedule"))
-  
+    
+    # Body
+    #card(),
+  #
+#
+    ## Textbox for GPT interaction
+    #card(
+    #  textAreaInput("prompt", label = "Chat with an AI Georgia Southern Fan!", width = "500px"),
+    #  actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary"),
+    #  p(uiOutput("response"))
+    #),
+  #
+    #code("Game Info:"),
+    #fluidRow(gt_output("schedule"))
 )
 
 #BACKEND =====================================================================================================
@@ -233,6 +299,28 @@ server <- function(input, output, session) {
    }
   )
   
+  # Conference Line Plot:
+  cfbPlotLine <- eventReactive(input$plotLine, {
+    conference <- input$conference
+    lineVar    <- input$lineVar
+    
+    df2 %>% 
+      filter(conference == !!conference) %>%
+      set_names(newNames2) %>%
+      ggplot(aes_string(x = "week", y = lineVar)) +
+      geom_point(aes(color = I(color))) +
+      geom_line() +
+      geom_area(aes(fill = I(color), color = I(color)), alpha = .5)+
+      facet_wrap(~school)+ 
+      theme_minimal() +
+      theme(strip.text.x = element_text(size = 15),
+            axis.title.x = element_text(size = 20),
+            axis.text.y = element_text(size = 15),
+            axis.text.x = element_text(size = 15)) +
+      ylab(to_any_case(lineVar, "title")) +
+      xlab("Week")
+  })
+  
   # Grab output of the prediction dataframe:
   output$predictionsTable <- 
     renderTable(
@@ -244,6 +332,11 @@ server <- function(input, output, session) {
   output$comparePlot <- 
     renderPlot(
       expr = {cfbplot()},  bg="transparent")
+  
+  # Grab output of line plot:
+  output$linePlot <- 
+    renderPlot(
+      expr = {cfbPlotLine()},  bg="transparent")
 
   # Obtain GPT Response
   rv <- 
