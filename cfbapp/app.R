@@ -8,6 +8,11 @@ library(bslib)
 library(xgboost)
 library(httr2)
 library(jsonlite)
+library(htmlwidgets)
+library(cfbfastR)
+library(gt)
+library(fontawesome)
+library(shinyjs)
 
 # Data:
 dfl <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
@@ -28,8 +33,9 @@ newNamesLimited <- sort(newNames[-which(newNames %in% badVars)])
 teamNames <- sort(unique(dfl$school))
 
 # Requirements
-source("app helper.R")
-source("req.R")
+source("helpers/app helper.R")
+source("helpers/req.R")
+source("helpers/schedule.R")
 
 # FRONTEND ===================================================================================================
 ui <- fluidPage(
@@ -86,14 +92,15 @@ ui <- fluidPage(
       }"
       )
     ),
-  
+ 
   # Title
   titlePanel(title=div(img(src="icon.png", height = "150x", width = "150px"), img(src="logo.png", height = "100px"))),
   
   # Subtitle
   h4('2023 College Football Matchup Simulator'),
-  h5('Please click the "Submit" button to get started!'),
+  h5('Please click the "Predict" button to get started!'),
   h6('Exhausted Georgia Southern Fan Update'),
+  
   
   # Side bar with inputs:
   sidebarLayout(
@@ -104,9 +111,12 @@ ui <- fluidPage(
       numericInput("moneyLine1", "Home Team's Moneyline",value = -195, min = -12000, max = 12000),
       numericInput("moneyLine2", "Away Team's Moneyline",value = 165, min = -12000, max = 12000),
       numericInput("overUnder",  "Over/Under",value = 45, min = 0, max = 180),
+      h4("\n"),
+      actionButton("submitBtn", "Predict"),
+      h4("\n"),
+      h4("\n"),
       selectizeInput("plotVar", "Bar Chart Variable", choices = newNamesLimited, multiple = FALSE,
                      selected = newNamesLimited["total_yards_avg"]),
-      #actionButton("submitBtn", "Submit")
       
     ),
     
@@ -126,16 +136,19 @@ ui <- fluidPage(
   actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary"),
   h4("\n"),
   code("AI Response:"),
-  p(uiOutput("response"))
+  p(uiOutput("response")),
+  code("Game Info:"),
+  fluidRow(gt_output("schedule"))
+  
 )
 
 #BACKEND =====================================================================================================
 server <- function(input, output, session) {
   # Initialize this for later:
   pTable <- reactiveVal(NULL)
-  
+
   # Return a table with the predictions of the selected teams.
-  predictions <- reactive({
+  predictions <- eventReactive(input$submitBtn, {
     team1 <-  input$team1
     team2 <-  input$team2
     spread <- input$spread
@@ -247,6 +260,9 @@ server <- function(input, output, session) {
   ) 
   
   output$response <- renderUI({rv()}) 
+  
+  # Schedule table with betting info:
+  output$schedule <- render_gt(expr = schedule, width = pct(100), align = "left")
 }
 
 # Run the application 

@@ -2,5 +2,5 @@
 *.dcf
 *.rds
 /rsconnect/
-/cfbapp/req.R
+/cfbapp/helpers/req.R
 Dockerfile
