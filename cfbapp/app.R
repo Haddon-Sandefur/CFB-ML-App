@@ -31,7 +31,8 @@ trend_data <-
   read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
     filter(classification == "fbs") %>% 
     select(school, opponent, week, conference, color, 
-           matches("yards"), -matches("Avg"), -matches("Lag"),
+           matches("yards"), matches("turnover"), matches("Tds"),
+           matches("turnouver"), -matches("Avg"), -matches("Lag"),
          -matches("totalPenalties"))
 
 
@@ -329,7 +330,7 @@ server <- function(input, output, session) {
       geom_line() +
       geom_area(aes(fill = I(color), color = I(color)), alpha = .5)+
       facet_wrap(~school)+ 
-      theme_minimal() +
+      theme_classic() +
       theme(strip.text.x = element_text(size = 15),
             axis.title.x = element_text(size = 20),
             axis.text.y = element_text(size = 15),
