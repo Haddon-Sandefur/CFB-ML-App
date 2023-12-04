@@ -13,40 +13,47 @@ library(cfbfastR)
 library(gt)
 library(fontawesome)
 library(shinyjs)
+library(DT)
 
 # Data:
-dfl <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
+data_browser <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
+  select(school, opponent, week, points, pointsAllowed, matches("yards"), matches("Tds"), 
+         matches("tackles"), matches("turnover"), matches("down"), -matches("Avg"), -matches("Lag"))
+
+primary_data <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
        filter(classification == "fbs")                      %>%  
        select(school, opponent, week, matches("Avg"), -matches("Lag"))
 
 # Data:
-df2 <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
+trend_data <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
   filter(classification == "fbs") %>% 
-  select(school, opponent, week, conference, color, matches("yards"), -matches("Avg"), -matches("Lag"))
+  select(school, opponent, week, conference, color, matches("yards"), -matches("Avg"), -matches("Lag"),
+         -matches("totalPenalties"))
 
-conferences <- unique(df2$conference)
-maxWeek <- max(df2$week)
 
-# Rename some variables
-newNames <- snakecase::to_any_case(colnames(dfl), case = "snake")
-newNames[which(newNames == "cbs_rank_avg")] <- "cbs_rank"
-newNames[which(newNames == "cbs_rank_opp_avg")] <- "cbs_rank_opp"
-names(newNames) <- newNames
-
-# Remove Certain things that dont make sense for plotting
-badVars <- c("school", "opponent", "week", "season_avg")
-newNamesLimited <- sort(newNames[-which(newNames %in% badVars)])
+conferences <- unique(trend_data$conference)
+maxWeek <- max(trend_data$week)
 
 # Rename some variables
-newNames2 <- snakecase::to_any_case(colnames(df2), case = "snake")
-names(newNames2) <- newNames2
+primary_names <- snakecase::to_any_case(colnames(primary_data), case = "snake")
+primary_names[which(primary_names == "cbs_rank_avg")] <- "cbs_rank"
+primary_names[which(primary_names == "cbs_rank_opp_avg")] <- "cbs_rank_opp"
+names(primary_names) <- primary_names
 
 # Remove Certain things that dont make sense for plotting
-badVars <- c("school", "opponent", "week", "season_avg", "color", "conference")
-newNamesLimited2 <- sort(newNames2[-which(newNames2 %in% badVars)])
+primary_bad_vars <- c("school", "opponent", "week", "season_avg")
+primary_names_limit <- sort(primary_names[-which(primary_names %in% primary_bad_vars)])
+
+# Rename some variables
+trend_names <- snakecase::to_any_case(colnames(trend_data), case = "snake")
+names(trend_names) <- trend_names
+
+# Remove Certain things that dont make sense for plotting
+trend_bad_vars <- c("school", "opponent", "week", "season_avg", "color", "conference")
+trend_names_limit <- sort(trend_names[-which(trend_names %in% trend_bad_vars)])
 
 # Team Names for user input
-teamNames <- sort(unique(dfl$school))
+teamNames <- sort(unique(primary_data$school))
 
 # Requirements
 source("helpers/app helper.R")
@@ -62,7 +69,6 @@ ui <- page_sidebar(
     base_font = font_google("Space Mono"),
     code_font = font_google("Space Mono")
   ),
-  
   
   # CSS style blueprint:
   tags$style(HTML("
@@ -93,7 +99,9 @@ ui <- page_sidebar(
       }
       .shiny-input-container {
         color: #474747; # Controls Box selection color
+        background-color: #474747;
       }
+      
       p {
         color: #050505;
         border-color: #f5c962;
@@ -109,6 +117,7 @@ ui <- page_sidebar(
       }
       .bslib-sidebar-layout > .collapse-toggle {
         padding: 50px 0;
+        margin-bottom: 500px;
         background-color: #ffeaba;
       }
       
@@ -118,18 +127,16 @@ ui <- page_sidebar(
       "
       )
     ),
+  
   # Title
   title = div(
     img(src="icon.png", height = "150x", width = "150px"), 
     img(src="logo.png", height = "100px"),
     class = "title-container"),
   
-  
   # Subtitle
   h4('2023 College Football Matchup Simulator'),
-  h5('Please click the "Predict" button to get started!'),
   h6('Exhausted Georgia Southern Fan Update'),
-  
   
   # Side bar with inputs:
   sidebar = sidebar(
@@ -143,69 +150,75 @@ ui <- page_sidebar(
       h6("Enter the above information to use the Matchup Predictor and Quick Compare")
       ),
   
+  # Pages
   navset_tab(
+    
+    # Page1
     nav_panel(
       title = "Matchup Predictor",
+      
+      # Prediction Output
       card(
            card_header("Prediction"), 
            tableOutput("predictionsTable"),
            h4("\n"),
            actionButton("submitBtn", "Predict")
            ),
-      card(card_header("Chatbot"), 
+      
+      # Chatbot
+      card(
+           card_header("Chatbot"), 
            textAreaInput("prompt", label = "Got questions about the prediction result? Ask here:", width = "500px"),
            actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary"),
            code("Response:"),
            p(uiOutput("response"))
-      ),
+          ),
+      # Previous/Upcoming Games
       card(fluidRow(gt_output("schedule")))
     ),
     
+    # Page2
     nav_panel(
       title = "Quick Compare", 
       card(card_header("Game Averages"), 
            selectizeInput("plotVar", 
                           "Select Variable", 
-                          choices = newNamesLimited, 
+                          choices = primary_names_limit, 
                           multiple = FALSE,
-                          selected = newNamesLimited["total_yards_avg"]
+                          selected = primary_names_limit["total_yards_avg"]
                           ),
            h4(paste("Data through week", maxWeek)),
            plotOutput("comparePlot")
            )
     ),
     
+    # Page 3
     nav_panel(
       title = "Team Trends",
-      
       card(
            card_header("Pick a Conference and a stat"),
            div(
              fluidRow(
               selectizeInput("conference", "Conference", choices = conferences, multiple = FALSE),
-              selectizeInput("lineVar", "Line Chart Variable", choices = newNamesLimited2, multiple = FALSE, selected = newNamesLimited2["total_yards"])
+              selectizeInput("lineVar", "Line Chart Variable", choices = trend_names_limit, multiple = FALSE, selected = trend_names_limit["total_yards"])
             )
            ),
            h4(paste("Data through week", maxWeek)),
            plotOutput("linePlot"),
-           actionButton("plotLine", "Plot")
            )
       ),
-  ),
     
-    # Body
-    #card(),
-  #
-#
-    ## Textbox for GPT interaction
-    #card(
-    #  textAreaInput("prompt", label = "Chat with an AI Georgia Southern Fan!", width = "500px"),
-    #  actionButton("chat", NULL, icon = icon("paper-plane"), width = "100px", class = "m-2 btn-secondary"),
-    #  p(uiOutput("response"))
-    #),
-  #
-    #code("Game Info:"),
-    #fluidRow(gt_output("schedule"))
+    # Page 4
+    nav_panel(
+      title = "Data Explore",
+      card(
+        min_height = 1000,
+        card_header("Pick a Team"),
+        selectizeInput("dataTeam", "Team", choices = teamNames, multiple = FALSE),
+        dataTableOutput("dataBrowse")
+      )
+    ),
+  ),
 )
 
 #BACKEND =====================================================================================================
@@ -251,7 +264,7 @@ server <- function(input, output, session) {
       
       # Extra data for chatbot to look at:
       extraInfo <-
-        dfl %>% 
+        primary_data %>% 
           filter((school == team1 | school == team2) & week == max(week)) %>%
           select(school, totalYardsAvg, totalYardsAllowedAvg, turnoversAllowedAvg, yardsPerRushAttemptAvg,
                  yardsPerRushAttemptAllowedAvg, yardsPerPassAvg, yardsPerPassAllowedAvg, tacklesForLossAvg, week) %>% 
@@ -279,11 +292,11 @@ server <- function(input, output, session) {
     variable <- input$plotVar
     
     # The plot:
-    dfl %>% dplyr::filter(school == team1 | school == team2) %>% 
+    primary_data %>% dplyr::filter(school == team1 | school == team2) %>% 
             group_by(school) %>% 
             filter(week == max(week)) %>% 
             ungroup() %>% 
-            set_names(newNames) %>% 
+            set_names(primary_names) %>% 
             ggplot(aes_string(y= "school", x = variable)) +
             geom_col(aes(color = school, fill = school), linewidth = 2) +
             scale_color_cfb(alt_colors = teamNames) +
@@ -300,13 +313,13 @@ server <- function(input, output, session) {
   )
   
   # Conference Line Plot:
-  cfbPlotLine <- eventReactive(input$plotLine, {
+  cfbPlotLine <- reactive({
     conference <- input$conference
     lineVar    <- input$lineVar
     
-    df2 %>% 
+    trend_data %>% 
       filter(conference == !!conference) %>%
-      set_names(newNames2) %>%
+      set_names(trend_names) %>%
       ggplot(aes_string(x = "week", y = lineVar)) +
       geom_point(aes(color = I(color))) +
       geom_line() +
@@ -320,6 +333,28 @@ server <- function(input, output, session) {
       ylab(to_any_case(lineVar, "title")) +
       xlab("Week")
   })
+  
+  # Obtain GPT Response
+  gptResponse <- 
+    eventReactive(input$chat, {
+      chat_history <- NULL
+      message <-  paste(pTable(), input$prompt)
+      print(message)
+      if(is.null(message) | message == ""){
+        response <- "Please type something!"
+      }else{
+        response <- chat(message, history = chat_history, system_prompt = "general")
+      }
+    }
+    ) 
+  
+  browse <-
+    reactive({
+      team <- input$dataTeam
+      
+      data_browser %>% 
+        filter(school == !!team)
+    })
   
   # Grab output of the prediction dataframe:
   output$predictionsTable <- 
@@ -337,25 +372,16 @@ server <- function(input, output, session) {
   output$linePlot <- 
     renderPlot(
       expr = {cfbPlotLine()},  bg="transparent")
-
-  # Obtain GPT Response
-  rv <- 
-    eventReactive(input$chat, {
-      chat_history <- NULL
-      message <-  paste(pTable(), input$prompt)
-      print(message)
-      if(is.null(message) | message == ""){
-        response <- "Please type something!"
-      }else{
-        response <- chat(message, history = chat_history, system_prompt = "general")
-      }
-   }
-  ) 
   
-  output$response <- renderUI({rv()}) 
+  output$response <- renderUI({gptResponse()}) 
   
   # Schedule table with betting info:
   output$schedule <- render_gt(expr = schedule, width = pct(100), align = "left")
+  
+  # Output data table
+  output$dataBrowse <- renderDataTable(
+    expr = {browse()}
+  )
 }
 
 # Run the application 
