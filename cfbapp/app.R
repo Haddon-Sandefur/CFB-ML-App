@@ -16,18 +16,22 @@ library(shinyjs)
 library(DT)
 
 # Data:
-data_browser <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
+data_browser <- 
+  read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
   select(school, opponent, week, points, pointsAllowed, matches("yards"), matches("Tds"), 
          matches("tackles"), matches("turnover"), matches("down"), -matches("Avg"), -matches("Lag"))
 
-primary_data <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
-       filter(classification == "fbs")                      %>%  
+primary_data <- 
+  read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
+       filter(classification == "fbs") %>%  
        select(school, opponent, week, matches("Avg"), -matches("Lag"))
 
 # Data:
-trend_data <- read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
-  filter(classification == "fbs") %>% 
-  select(school, opponent, week, conference, color, matches("yards"), -matches("Avg"), -matches("Lag"),
+trend_data <- 
+  read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
+    filter(classification == "fbs") %>% 
+    select(school, opponent, week, conference, color, 
+           matches("yards"), -matches("Avg"), -matches("Lag"),
          -matches("totalPenalties"))
 
 
@@ -99,7 +103,7 @@ ui <- page_sidebar(
       }
       .shiny-input-container {
         color: #474747; # Controls Box selection color
-        background-color: #474747;
+        background-color: white;
       }
       
       p {
@@ -113,7 +117,7 @@ ui <- page_sidebar(
          color: #050505;
       }
       .title-container {
-        background-color: #252625;  
+        background-color: #36537d;  
       }
       .bslib-sidebar-layout > .collapse-toggle {
         padding: 50px 0;
@@ -340,7 +344,7 @@ server <- function(input, output, session) {
       chat_history <- NULL
       message <-  paste(pTable(), input$prompt)
       print(message)
-      if(is.null(message) | message == ""){
+      if(is.null(input$prompt) | input$prompt == ""){
         response <- "Please type something!"
       }else{
         response <- chat(message, history = chat_history, system_prompt = "general")
