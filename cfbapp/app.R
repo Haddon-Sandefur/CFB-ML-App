@@ -59,6 +59,7 @@ trend_names_limit <- sort(trend_names[-which(trend_names %in% trend_bad_vars)])
 
 # Team Names for user input
 teamNames <- sort(unique(primary_data$school))
+names(teamNames) <- teamNames
 
 # Requirements
 source("helpers/app helper.R")
@@ -135,21 +136,20 @@ ui <- page_sidebar(
   
   # Title
   title = div(
-    img(src="icon.png", height = "150x", width = "150px"), 
     img(src="logo.png", height = "100px"),
     class = "title-container"),
   
   # Subtitle
   h4('2023 College Football Matchup Simulator'),
-  h6('Exhausted Georgia Southern Fan Update'),
+  h6('New UI Update!'),
   
   # Side bar with inputs:
   sidebar = sidebar(
-      selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames[35]),
-      selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames[3]),
-      numericInput("spread", "Home Team's Spread", value = -5, min = -80, max = 80),
-      numericInput("moneyLine1", "Home Team's Moneyline",value = -195, min = -12000, max = 12000),
-      numericInput("moneyLine2", "Away Team's Moneyline",value = 165, min = -12000, max = 12000),
+      selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames["Army"]),
+      selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames["Navy"]),
+      numericInput("spread", "Home Team's Spread", value = -2.5, min = -80, max = 80),
+      numericInput("moneyLine1", "Home Team's Moneyline",value = 110, min = -12000, max = 12000),
+      numericInput("moneyLine2", "Away Team's Moneyline",value = -130, min = -12000, max = 12000),
       numericInput("overUnder",  "Over/Under",value = 45, min = 0, max = 180),
       h6("\n"),
       h6("Enter the above information to use the Matchup Predictor and Quick Compare")
@@ -169,7 +169,16 @@ ui <- page_sidebar(
            h4("\n"),
            actionButton("submitBtn", "Predict")
            ),
-      
+      card(card_header("Quick Compare"), 
+           selectizeInput("plotVar", 
+                          "Select Variable", 
+                          choices = primary_names_limit, 
+                          multiple = FALSE,
+                          selected = primary_names_limit["total_yards_avg"]
+           ),
+           h6(paste("Data through week", maxWeek)),
+           plotOutput("comparePlot")
+      ),
       # Chatbot
       card(
            card_header("Chatbot"), 
@@ -179,23 +188,10 @@ ui <- page_sidebar(
            p(uiOutput("response"))
           ),
       # Previous/Upcoming Games
-      card(fluidRow(gt_output("schedule")))
+      card(card_header("Upcoming Games"),
+           fluidRow(gt_output("schedule")))
     ),
     
-    # Page2
-    nav_panel(
-      title = "Quick Compare", 
-      card(card_header("Game Averages"), 
-           selectizeInput("plotVar", 
-                          "Select Variable", 
-                          choices = primary_names_limit, 
-                          multiple = FALSE,
-                          selected = primary_names_limit["total_yards_avg"]
-                          ),
-           h4(paste("Data through week", maxWeek)),
-           plotOutput("comparePlot")
-           )
-    ),
     
     # Page 3
     nav_panel(
