@@ -77,61 +77,8 @@ ui <- page_sidebar(
   ),
   
   # CSS style blueprint:
-  tags$style(HTML("
-      @import url('https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap');
-      h1 {
-        font-family: 'Space Mono', sans-serif;
-        color:#767676  ;
-        font-size: 50px;
-      }
-      h2 {
-        font-family: 'Space Mono', sans-serif;
-        color:#1d24a8  ;
-        font-size: 50px;
-      }
-      h4 {
-        color: #1d24a8;
-        font-weight: bold;
-      }
-      h5 {
-        color: #1d24a8;
-      }
-      h6 {
-        color: #1d24a8;
-      }
-      body {
-        background-color: #f5c962; # Controls color behind card
-        color: #191919;
-      }
-      .shiny-input-container {
-        color: #474747; # Controls Box selection color
-        background-color: white;
-      }
-      
-      p {
-        color: #050505;
-        border-color: #f5c962;
-        border-bottom-style: solid;
-        font-size: 20px;
-      }
-      code {
-         font-size: 20px;
-         color: #050505;
-      }
-      .title-container {
-        background-color: #36537d;  
-      }
-      .bslib-sidebar-layout > .collapse-toggle {
-        padding: 50px 0;
-        margin-bottom: 500px;
-        background-color: #ffeaba;
-      }
-      
-      .bslib-sidebar-layout > .collapse-toggle > .collapse-icon {
-        fill: #252625;
-      }        
-      "
-      )
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "my_style.css")
     ),
   
   # Title
