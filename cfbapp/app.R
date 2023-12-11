@@ -114,6 +114,7 @@ ui <- page_sidebar(
            card_header("Prediction"), 
            tableOutput("predictionsTable"),
            h4("\n"),
+           h6("Select two teams in the left pane to get started!"),
            actionButton("submitBtn", "Predict")
            ),
       card(card_header("Quick Compare"), 
