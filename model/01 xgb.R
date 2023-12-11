@@ -24,7 +24,7 @@ df2 <- df %>% mutate_all(~replace(., is.na(.), 0))
 df2 <- df2 %>% select(pointsDiff,
                       school,
                       opponent,
-                      cbsRankDiff,
+                      #cbsRankDiff,
                       cbsConfRankDiff,
                       rushTdsAvgLagDiff,
                       rushingYardsAvgLagDiff,
@@ -40,9 +40,9 @@ df2 <- df2 %>% select(pointsDiff,
                       penaltyYardsLagDiff,
                       turnoversLagDiff,
                       completionPercentLagDiff,
-                      spreadOpen,
                       moneyline,
                       overUnderOpen,
+                      spreadOpen,
                       week
                       )
 

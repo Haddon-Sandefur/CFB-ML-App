@@ -8,7 +8,7 @@ library(fontawesome)
 source("helpers/cfb week.R")
 
 # Get Lines
-schedule <- cfbfastR::cfbd_betting_lines(year = 2023, week = returnCfbWeek())
+schedule <- cfbfastR::cfbd_betting_lines(year = 2023, season_type = "postseason")
 
 # Duplicate team cols and subset:
 schedule <- 

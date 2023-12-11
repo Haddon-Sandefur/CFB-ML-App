@@ -92,11 +92,11 @@ ui <- page_sidebar(
   
   # Side bar with inputs:
   sidebar = sidebar(
-      selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames["Army"]),
-      selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames["Navy"]),
+      selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames["Michigan"]),
+      selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames["Alabama"]),
       numericInput("spread", "Home Team's Spread", value = -2.5, min = -80, max = 80),
-      numericInput("moneyLine1", "Home Team's Moneyline",value = 110, min = -12000, max = 12000),
-      numericInput("moneyLine2", "Away Team's Moneyline",value = -130, min = -12000, max = 12000),
+      numericInput("moneyLine1", "Home Team's Moneyline",value = -125, min = -12000, max = 12000),
+      numericInput("moneyLine2", "Away Team's Moneyline",value = 105, min = -12000, max = 12000),
       numericInput("overUnder",  "Over/Under",value = 45, min = 0, max = 180),
       h6("\n"),
       h6("Enter the above information to use the Matchup Predictor and Quick Compare")
