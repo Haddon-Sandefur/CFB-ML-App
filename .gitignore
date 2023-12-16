@@ -1,6 +1,7 @@
 *.csv
 *.dcf
 *.rds
+*.Rhistory
 /rsconnect/
 /cfbapp/helpers/req.R
 Dockerfile

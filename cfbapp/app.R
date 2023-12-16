@@ -150,13 +150,12 @@ ui <- page_sidebar(
              fluidRow(
               selectizeInput("conference", "Conference", choices = conferences, multiple = FALSE),
               selectizeInput("lineVar", "Line Chart Variable", choices = trend_names_limit, multiple = FALSE, selected = trend_names_limit["total_yards"])
-            )
-           ),
+              )
+            ),
            h4(paste("Data through week", maxWeek)),
            plotOutput("linePlot"),
            )
-      ),
-    
+    ),
     # Page 4
     nav_panel(
       title = "Data Explore",
@@ -165,6 +164,18 @@ ui <- page_sidebar(
         card_header("Pick a Team"),
         selectizeInput("dataTeam", "Team", choices = teamNames, multiple = FALSE),
         dataTableOutput("dataBrowse")
+      )
+    ),
+    # Page 5
+    nav_panel(
+      title = "Read Me",
+      card(
+        h1("IMPORTANT"),
+        h3("By using this application you agree to the following:"),
+        p("This application is open-source and free to use. I am not responsible for
+          any gambling outcomes impacting users by way of their decisions to bet on sporting events
+          represented in this application. I do not recommend using this application in any fashion
+          for gambling.")
       )
     ),
   ),
@@ -214,7 +225,7 @@ server <- function(input, output, session) {
       # Extra data for chatbot to look at:
       extraInfo <-
         primary_data %>% 
-          filter((school == team1 | school == team2) & week == max(week)) %>%
+          filter((school == team1 | school == team2) & week == 14) %>% # Week before bowl season
           select(school, totalYardsAvg, totalYardsAllowedAvg, turnoversAllowedAvg, yardsPerRushAttemptAvg,
                  yardsPerRushAttemptAllowedAvg, yardsPerPassAvg, yardsPerPassAllowedAvg, tacklesForLossAvg, week) %>% 
           mutate(across(where(is.numeric), \(X) round(X, digits = 1))) %>% 

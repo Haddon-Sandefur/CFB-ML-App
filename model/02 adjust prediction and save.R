@@ -82,3 +82,4 @@ write.csv(df5, paste("cfbapp/gamesModifiedModel", year, "Condensed.csv", sep = "
 
 # Clear Memory
 rm(list = setdiff(c("year", "runnerPath"), ls()))
+gc()
