@@ -36,7 +36,7 @@ Execute `00 runner.R` to pull/scrape data and train the models. Data will be sav
 >   * `Sys.setenv(CFBD_API_KEY = CFBD_API_KEY)`
 
 #### Other scripts
-Any scripts located in `aws` and `misc` are not required for the application to run. Scripts in `misc` are exploratory and pull data from different sources on the web, but aren;t used in the model nor app. The script in the `aws` folder pushes the data created by `00 runner.R` to an AWS S3 bucket called "cfbapp23". For this to work, you need to make sure you're signed into AWS via it's CLI on your local device.
+Any scripts located in `aws` and `misc` are not required for the application to run. Scripts in `misc` are exploratory and pull data from different sources on the web, but aren't used in the model nor app. The script in the `aws` folder pushes the data created by `00 runner.R` to an AWS S3 bucket called "cfbapp23". For this to work, you need to make sure you're signed into AWS via it's CLI on your local device.
 
 #### Coming soon:
 * Altering locations of where data is saved.
