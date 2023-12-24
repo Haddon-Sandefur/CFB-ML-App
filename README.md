@@ -5,6 +5,9 @@
 ### App Link:
 https://jsandy.shinyapps.io/cfbapp/
 
+### Blog Post
+https://garbage-time.github.io/posts/cfb-app/
+
 ### Current Version Notes:
 * XGB Model trained through Week 11.
 * Added chatbot to application.
