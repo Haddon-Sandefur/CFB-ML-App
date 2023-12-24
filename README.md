@@ -30,9 +30,9 @@ Execute `00 runner.R` to pull/scrape data and train the models. Data will be sav
 
 >[!IMPORTANT]
 >This repo will not work without an R script called `req.R`, which should be created by external users and placed in `cfbapp/helpers/`. This script must then contain variables:
-> * OPENAI_API_KEY: String. The user's OpenAI api key.
-> * PROMPT2: A string dictating the rules for the LLM's behavior ('PROMPT2' because that's how it's referenced in other scripts).
-> * CFBD_API_KEY: String. The user's `cfbfastR` api key. This is needed for the schedule table. Further, in this script, the user must supply the following code:
+> * `OPENAI_API_KEY`: String. The user's OpenAI api key.
+> * `PROMPT2`: A string dictating the rules for the LLM's behavior ('PROMPT2' because that's how it's referenced in other scripts).
+> * `CFBD_API_KEY`: String. The user's `cfbfastR` api key. This is needed for the schedule table. Further, in this script, the user must supply the following code:
 >   * `Sys.setenv(CFBD_API_KEY = CFBD_API_KEY)`
 > * DO NOT PUBLISH THIS UNLESS PRIVATE
 
