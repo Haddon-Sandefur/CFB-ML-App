@@ -11,6 +11,9 @@ https://garbage-time.github.io/posts/cfb-app/
 ### Current Version Notes:
 * XGB Model trained through Week 14.
 * Added chatbot to application.
+* Added schedules with score results and betting information.
+* Added data and trend viewer.
+* Changed UI
 
 >[!NOTE]
 >The Chatbot can only access data pulled on teams prompted by the users query. If you ask the Chatbot information like "Who is Duke's head coach", it will give you an outdated answer.
