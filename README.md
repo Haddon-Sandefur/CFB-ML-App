@@ -16,7 +16,7 @@ https://garbage-time.github.io/posts/cfb-app/
 * Changed UI
 
 >[!NOTE]
->The Chatbot can only access data pulled on teams prompted by the users query. If you ask the Chatbot information like "Who is Duke's head coach", it will give you an outdated answer.
+>The Chatbot can only access data pulled on teams prompted by the user's query. If you ask the Chatbot information like "Who is Duke's head coach", it will give you an outdated answer.
 
 ### Purpose:
 This project acts as a start-to-finish pipeline of securing college football data from multiple sources, training an XGBoost model for point differential predictions, and creating an app which users can intuitively experiment with the model.
@@ -34,6 +34,9 @@ Execute `00 runner.R` to pull/scrape data and train the models. Data will be sav
 > * PROMPT2: A string dictating the rules for the LLM's behavior ('PROMPT2' because that's how it's referenced in other scripts).
 > * CFBD_API_KEY: String. The user's `cfbfastR` api key. This is needed for the schedule table. Further, in this script, the user must supply the following code:
 >   * `Sys.setenv(CFBD_API_KEY = CFBD_API_KEY)`
+
+#### Other scripts
+Any scripts located in `aws` and `misc` are not required for the application to run. Scripts in `misc` are exploratory and pull data from different sources on the web, but aren;t used in the model nor app. The script in the `aws` folder pushes the data created by `00 runner.R` to an AWS S3 bucket called "cfbapp23". For this to work, you need to make sure you're signed into AWS via it's CLI on your local device.
 
 #### Coming soon:
 * Altering locations of where data is saved.
