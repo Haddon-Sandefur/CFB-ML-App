@@ -132,7 +132,7 @@ trPred <-
 
 # Variable Importance:
 impMat <- xgboost::xgb.importance(feature_names = trPred$fit$feature_names, model = trPred$fit)
-plot   <- xgboost::xgb.ggplot.importance(impMat)
+plot   <- xgboost::xgb.ggplot.importance(impMat[1:20,])
 
 # Save the plot
 ggsave(plot, filename = "variable_importance_plot.png")
