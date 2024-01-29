@@ -9,11 +9,10 @@ https://jsandy.shinyapps.io/cfbapp/
 https://garbage-time.github.io/posts/cfb-app/
 
 ### Current Version Notes:
-* XGB Model trained through Week 14.
-* Added chatbot to application.
-* Added schedules with score results and betting information.
-* Added data and trend viewer.
-* Changed UI
+* XGB Model trained through Week 7.
+* Removed Vegas features from predictive model
+* Added SP+ features to model
+* Added tracking table which displays teams in which the model predicts the correct cover outcome the most.
 
 >[!NOTE]
 >The Chatbot can only access data pulled on teams prompted by the user's query. If you ask the Chatbot information like "Who is Duke's head coach", it will give you an outdated answer.
@@ -40,11 +39,7 @@ Execute `00 runner.R` to pull/scrape data and train the models. Data will be sav
 Any scripts located in `aws` and `misc` are not required for the application to run. Scripts in `misc` are exploratory and pull data from different sources on the web, but aren't used in the model nor app. The script in the `aws` folder pushes the data created by `00 runner.R` to an AWS S3 bucket called "cfbapp23". For this to work, you need to make sure you're signed into AWS via it's CLI on your local device.
 
 #### Coming soon:
-* Altering locations of where data is saved.
-* ~~Chatbot ability to read data and ML results.~~ Complete.
-* ~~Dockerizing the application.~~ Complete.
 * Flowchart for ths README.md
 
 #### Coming later:
-* Adding model metrics to app with new layout (mobile app?).
 * Experimentation with non-tree based models and potential inclusion.
