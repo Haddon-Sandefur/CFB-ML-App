@@ -4,4 +4,5 @@
 *.Rhistory
 /rsconnect/
 /cfbapp/helpers/req.R
+misc
 Dockerfile

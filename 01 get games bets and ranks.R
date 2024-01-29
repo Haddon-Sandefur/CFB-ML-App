@@ -66,6 +66,19 @@ games <- games %>% group_by(conference) %>% mutate(cbsConfRank = mean(cbsRank, n
 # Add Opponent Conference Average CBS Ranking
 games <- games %>% group_by(opponentConference) %>% mutate(cbsConfRankOpp = mean(cbsRankOpp, na.rm = T))
 
+# Add SP ratings:
+# Read in xwalk for sp data
+spXwalk <- read.table("downstream/spXwalk.txt", header = TRUE)
+spData  <- left_join(read.csv("downstream/spData.csv"), spXwalk, by = "school", relationship = "many-to-one")
+spData  <- rename(spData, spSchool = school)
+spData2 <- left_join(spData, dft, by = "alt_name3")
+
+# Join to games
+games <- left_join(games, spData2, by = c("school", "week"), relationship = "one-to-one")
+
+# Add Conference Average SP Ranking
+games <- games %>% group_by(conference) %>% mutate(spConfRank = mean(spRatingScale, na.rm = T))
+
 # Save data
 write.csv(games, paste("downstream/games", year, ".csv", sep = ""), row.names = FALSE)
 

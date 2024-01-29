@@ -24,16 +24,27 @@ data_browser <-
 primary_data <- 
   read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
        filter(classification == "fbs") %>%  
-       select(school, opponent, week, matches("Avg"), -matches("Lag"))
+       select(school, opponent, week, spRating, matches("Avg"), -matches("Lag"))
 
-# Data:
 trend_data <- 
   read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
     filter(classification == "fbs") %>% 
     select(school, opponent, week, conference, color, 
            matches("yards"), matches("turnover"), matches("Tds"),
            matches("turnouver"), -matches("Avg"), -matches("Lag"),
-         -matches("totalPenalties"))
+          -matches("totalPenalties"))
+
+performance_data <-
+  read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
+  filter(classification == "fbs" & !is.na(coverCorrect)) %>%  
+  select(school, coverCorrect) %>% 
+  group_by(school) %>% 
+  summarize(`Percent Correct Cover Prediction` = mean(coverCorrect, na.rm = TRUE),
+            `Game Count` = n(),
+            .groups = "drop") %>% 
+  arrange(desc(`Percent Correct Cover Prediction`), desc(`Game Count`)) %>% 
+  mutate(`Percent Correct Cover Prediction` = paste0(round(100*`Percent Correct Cover Prediction`, 1), "%"))
+  
 
 
 conferences <- unique(trend_data$conference)
@@ -95,9 +106,6 @@ ui <- page_sidebar(
       selectizeInput("team1", "Home Team",   choices = teamNames, multiple = FALSE, selected = teamNames["Michigan"]),
       selectizeInput("team2", "Away Team", choices = teamNames, multiple = FALSE, selected = teamNames["Alabama"]),
       numericInput("spread", "Home Team's Spread", value = -2.5, min = -80, max = 80),
-      numericInput("moneyLine1", "Home Team's Moneyline",value = -125, min = -12000, max = 12000),
-      numericInput("moneyLine2", "Away Team's Moneyline",value = 105, min = -12000, max = 12000),
-      numericInput("overUnder",  "Over/Under",value = 45, min = 0, max = 180),
       h6("\n"),
       h6("Enter the above information to use the Matchup Predictor and Quick Compare")
       ),
@@ -115,7 +123,6 @@ ui <- page_sidebar(
            tableOutput("predictionsTable"),
            h4("\n"),
            h6("Select two teams in the left pane to get started!"),
-           actionButton("submitBtn", "Predict")
            ),
       card(card_header("Quick Compare"), 
            selectizeInput("plotVar", 
@@ -178,6 +185,15 @@ ui <- page_sidebar(
           for gambling.")
       )
     ),
+    # Page 6
+    nav_panel(
+      title = "Top Model Spread Performers",
+      h6("Testing Data Results Only"),
+      card(
+        min_height = 1000,
+        dataTableOutput("performers")
+      )
+    ),
   ),
 )
 
@@ -187,7 +203,7 @@ server <- function(input, output, session) {
   pTable <- reactiveVal(NULL)
 
   # Return a table with the predictions of the selected teams.
-  predictions <- eventReactive(input$submitBtn, {
+  predictions <- reactive({
     team1 <-  input$team1
     team2 <-  input$team2
     spread <- input$spread
@@ -196,7 +212,11 @@ server <- function(input, output, session) {
     overUnder  <- input$overUnder
     
     # List for if statement below:
-    argList <- list(team1, team2, spread, moneyLine1, moneyLine2, overUnder)
+    argList <- list(team1, team2, spread, 
+                    moneyLine1 = 100, 
+                    moneyLine2 = 100, 
+                    overUnder  = 60
+                    )
  
     # Return predictMatchup dataframe and pull relevant details:
     if (!(list(NULL) %in% argList) & !(list(NA) %in% argList) & !(list("") %in% argList)) {
@@ -227,7 +247,8 @@ server <- function(input, output, session) {
         primary_data %>% 
           filter((school == team1 | school == team2) & week == 14) %>% # Week before bowl season
           select(school, totalYardsAvg, totalYardsAllowedAvg, turnoversAllowedAvg, yardsPerRushAttemptAvg,
-                 yardsPerRushAttemptAllowedAvg, yardsPerPassAvg, yardsPerPassAllowedAvg, tacklesForLossAvg, week) %>% 
+                 yardsPerRushAttemptAllowedAvg, yardsPerPassAvg, yardsPerPassAllowedAvg, tacklesForLossAvg, 
+                 spRating, week) %>% 
           mutate(across(where(is.numeric), \(X) round(X, digits = 1))) %>% 
           janitor::clean_names(., "sentence")
       
@@ -316,6 +337,11 @@ server <- function(input, output, session) {
         filter(school == !!team)
     })
   
+  performers <-
+    reactive({
+      performance_data
+    })
+  
   # Grab output of the prediction dataframe:
   output$predictionsTable <- 
     renderTable(
@@ -342,6 +368,11 @@ server <- function(input, output, session) {
   output$dataBrowse <- renderDataTable(
     expr = {browse()}
   )
+  
+  # Output performance table
+  output$performers <- renderDataTable(
+    expr = {performers()}
+    )
 }
 
 # Run the application 

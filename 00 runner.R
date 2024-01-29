@@ -1,3 +1,6 @@
+rm(list = ls())
+gc()
+
 # Dependencies:
 library(tidyverse)
 library(cfbfastR)
@@ -7,6 +10,7 @@ library(stringdist)
 library(magrittr)
 library(xgboost)
 library(tidymodels)
+library(Ckmeans.1d.dp)
 
 #Set Directory to script path.
 runnerPath <- dirname(rstudioapi::getActiveDocumentContext()$path)

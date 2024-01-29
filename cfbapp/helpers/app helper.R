@@ -10,7 +10,7 @@ df  <- read.csv(paste("gamesModifiedModel2023Condensed.csv"))
 
 # Write function:
 predictMatchup <- function(team1, team2, manualBooks = FALSE, spreadTeam1, moneylineTeam1, moneylineTeam2, overunder, year){
-
+  
   
   
   pair <- df %>% 
@@ -39,8 +39,8 @@ predictMatchup <- function(team1, team2, manualBooks = FALSE, spreadTeam1, money
   
   # Take differences between selected teams.
   pairDiffs <- pair %>% 
-               select(where(is.numeric)) %>%
-               group_modify(~ diffFunc(.x))
+    select(where(is.numeric)) %>%
+    group_modify(~ diffFunc(.x))
   
   # Name Diff cols
   colnames(pairDiffs) <- paste(colnames(pairDiffs), "Diff", sep = "")
@@ -68,7 +68,7 @@ predictMatchup <- function(team1, team2, manualBooks = FALSE, spreadTeam1, money
     pair$moneyline <- c(moneylineTeam1, moneylineTeam2)
     pair$overUnder <- c(overunder)
   }
-
+  
   # Make Opponent Column - this is a factor in the ML model
   pair$opponent  <- rev(pair$school)
   

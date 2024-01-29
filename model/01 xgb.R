@@ -9,7 +9,7 @@
 year = year
 
 # Set Working Directory
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+# setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 # Set Seed
 set.seed(117)
@@ -24,30 +24,18 @@ df2 <- df %>% mutate_all(~replace(., is.na(.), 0))
 df2 <- df2 %>% select(pointsDiff,
                       school,
                       opponent,
-                      #cbsRankDiff,
-                      cbsConfRankDiff,
-                      rushTdsAvgLagDiff,
-                      rushingYardsAvgLagDiff,
-                      totalYardsAvgLagDiff,
-                      yardsPerPassAvgLagDiff,
-                      penaltyYardsAvgLagDiff,
-                      turnoversAvgLagDiff,
-                      completionPercentAvgLagDiff,
-                      rushTdsLagDiff,
-                      rushingYardsLagDiff,
-                      totalYardsLagDiff,
-                      yardsPerPassLagDiff,
-                      penaltyYardsLagDiff,
-                      turnoversLagDiff,
-                      completionPercentLagDiff,
-                      moneyline,
-                      overUnderOpen,
-                      spreadOpen,
-                      week
+                      spRatingScaleDiff,
+                      spOffenseDiff,
+                      spDefenseDiff,
+                      stability,
+                      week,
+                      matches("LagDiff"),
+                      -matches("cbs")
                       )
 
 # Split train and test set:
-testWeeks <- max(df2$week)
+# testWeeks <- max(df2$week)
+testWeeks <- 8:max(df2$week)
 dfTrain   <- df2 %>% filter(!(week %in% testWeeks)) %>% select(-week)
 dfTest    <- df2 %>% filter(week %in% testWeeks)    %>% select(-week)
 rm("df2")
@@ -73,7 +61,7 @@ cvFolds <-
 xgbModel <- 
   parsnip::boost_tree(
     mode = "regression",
-    trees = 1000,
+    trees = tune(),
     min_n = tune(),
     tree_depth = tune(),
     learn_rate = tune(),
@@ -86,6 +74,7 @@ xgbModel <-
 ## Params we want to search for
 xgbParams <- 
   dials::parameters(
+    trees(),
     min_n(),
     tree_depth(),
     learn_rate(),
@@ -139,7 +128,14 @@ trainProcessed <- bake(preprocessingRecipe,  new_data = dfTrain)
 # Create fit.
 trPred <- 
   xgbFinal %>%
-    fit(formula = pointsDiff ~ ., data = trainProcessed)                              
+    fit(formula = pointsDiff ~ ., data = trainProcessed) 
+
+# Variable Importance:
+impMat <- xgboost::xgb.importance(feature_names = trPred$fit$feature_names, model = trPred$fit)
+plot   <- xgboost::xgb.ggplot.importance(impMat)
+
+# Save the plot
+ggsave(plot, filename = "variable_importance_plot.png")
 
 # Save fit for future predictions.
 saveRDS(trPred, "model/xgbModelParsnip.rds")
@@ -149,7 +145,6 @@ trPred <-
   trPred  %>% 
     predict(new_data = trainProcessed) %>% # Make Predictions
     bind_cols(dfTrain)                     # Bind processed predictions to og train data.
-
 
 trPred %>%
   yardstick::metrics(pointsDiff, .pred) %>%
@@ -198,3 +193,5 @@ write.csv(dfPred, paste("cfbapp/gamesModifiedModel", year, ".csv", sep = ""))
 # Save Processed Training Data for future model interaction
 write.csv(trainProcessed, "downstream/trainProcessed.csv")
 write.csv(trainProcessed, "cfbapp/trainProcessed.csv")
+
+
