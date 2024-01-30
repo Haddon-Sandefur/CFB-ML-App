@@ -37,13 +37,15 @@ trend_data <-
 performance_data <-
   read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
   filter(classification == "fbs" & !is.na(coverCorrect)) %>%  
-  select(school, coverCorrect) %>% 
+  select(school, coverCorrect, spread, spreadOpen) %>% 
   group_by(school) %>% 
-  summarize(`Percent Correct Cover Prediction` = mean(coverCorrect, na.rm = TRUE),
+  summarize(`Percent Correct Cover Prediction (%)` = mean(coverCorrect, na.rm = TRUE),
             `Game Count` = n(),
+            `Average Spread` = round(mean(spread, na.rm = TRUE), 1),
+            `Average Open Spread` = round(mean(spreadOpen, na.rm = TRUE), 1),
             .groups = "drop") %>% 
-  arrange(desc(`Percent Correct Cover Prediction`), desc(`Game Count`)) %>% 
-  mutate(`Percent Correct Cover Prediction` = paste0(round(100*`Percent Correct Cover Prediction`, 1), "%"))
+  arrange(desc(`Percent Correct Cover Prediction (%)`), desc(`Game Count`)) %>% 
+  mutate(`Percent Correct Cover Prediction (%)` = round(100*`Percent Correct Cover Prediction (%)`, 1))
   
 
 

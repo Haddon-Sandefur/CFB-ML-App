@@ -135,7 +135,7 @@ impMat <- xgboost::xgb.importance(feature_names = trPred$fit$feature_names, mode
 plot   <- xgboost::xgb.ggplot.importance(impMat[1:20,])
 
 # Save the plot
-ggsave(plot, filename = "variable_importance_plot.png")
+ggsave(plot, filename = "model/variable_importance_plot.png")
 
 # Save fit for future predictions.
 saveRDS(trPred, "model/xgbModelParsnip.rds")
