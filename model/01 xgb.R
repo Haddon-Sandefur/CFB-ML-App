@@ -31,11 +31,11 @@ df2 <- df2 %>% select(pointsDiff,
                       week,
                       matches("LagDiff"),
                       -matches("cbs")
-                      )
+)
 
 # Split train and test set:
 # testWeeks <- max(df2$week)
-testWeeks <- 8:max(df2$week)
+testWeeks <- 7:max(df2$week)
 dfTrain   <- df2 %>% filter(!(week %in% testWeeks)) %>% select(-week)
 dfTest    <- df2 %>% filter(week %in% testWeeks)    %>% select(-week)
 rm("df2")
@@ -49,15 +49,7 @@ preprocessingRecipe <-
   recipes::step_nzv(all_nominal())                %>% # Remove no variance Variables (In here just in case)
   prep()
 
-# Step 2: Set CV specifications
-cvFolds <- 
-  recipes::bake(
-    preprocessingRecipe, 
-    new_data = dfTrain
-  ) %>%  
-  rsample::vfold_cv(v = 5)
-
-# Step 3: Initialize XGBoost Model - Fill params with empty tune()
+# Step 2: Initialize XGBoost Model - Fill params with empty tune()
 xgbModel <- 
   parsnip::boost_tree(
     mode = "regression",
@@ -69,7 +61,7 @@ xgbModel <-
   ) %>%
   set_engine("xgboost", objective = "reg:squarederror")
 
-# Step 4 Grid Search Best Params ------------------------------------------------
+# Step 3: Grid Search Best Params ------------------------------------------------
 
 ## Params we want to search for
 xgbParams <- 
@@ -96,13 +88,15 @@ xgbWF <-
   add_model(xgbModel) %>% 
   add_formula(pointsDiff ~ .)
 
+folds <- rsample::validation_time_split(dfTrain, prop = 0.8, breaks = 2)
+
 ## Search params - this may take a while but is necessary for automation
 xgbTuned <- tune::tune_grid(
   object = xgbWF,
-  resamples = cvFolds,
   grid = xgbGrid,
   metrics = yardstick::metric_set(rmse, rsq, mae),
-  control = tune::control_grid(verbose = TRUE)
+  control = tune::control_grid(verbose = TRUE),
+  resamples = folds
 )
 
 xgbTuned %>%
@@ -122,13 +116,13 @@ xgbFinal <-
   finalize_model(xgbBestParams)
 #---------------------------------------------------------------
 
-# Step 5: Train Model, evaluate Train RMSE
+# Step 4: Train Model, evaluate Train RMSE
 trainProcessed <- bake(preprocessingRecipe,  new_data = dfTrain)
 
 # Create fit.
 trPred <- 
   xgbFinal %>%
-    fit(formula = pointsDiff ~ ., data = trainProcessed) 
+  fit(formula = pointsDiff ~ ., data = trainProcessed) 
 
 # Variable Importance:
 impMat <- xgboost::xgb.importance(feature_names = trPred$fit$feature_names, model = trPred$fit)
@@ -143,8 +137,8 @@ saveRDS(trPred, "cfbapp/xgbModelParsnip.rds")
 
 trPred <- 
   trPred  %>% 
-    predict(new_data = trainProcessed) %>% # Make Predictions
-    bind_cols(dfTrain)                     # Bind processed predictions to og train data.
+  predict(new_data = trainProcessed) %>% # Make Predictions
+  bind_cols(dfTrain)                     # Bind processed predictions to og train data.
 
 trPred %>%
   yardstick::metrics(pointsDiff, .pred) %>%
@@ -152,28 +146,28 @@ trPred %>%
   knitr::kable(format = "pipe", caption = "Train Set") %>% 
   print()
 
-# Step 6: Test Model, evaluate Test RMSE
+# Step 5: Test Model, evaluate Test RMSE
 testProcessed <- bake(preprocessingRecipe,  new_data = dfTest)
 
 tsPred <- 
   xgbFinal %>%
-    fit(formula = pointsDiff ~ ., data = trainProcessed) %>%   # Fit Model... again 
-      predict(new_data = testProcessed) %>%                    # Make Predictions
-      bind_cols(dfTest)                                        # Bind processed predictions to og test data.
+  fit(formula = pointsDiff ~ ., data = trainProcessed) %>%   # Fit Model... again 
+  predict(new_data = testProcessed) %>%                    # Make Predictions
+  bind_cols(dfTest)                                        # Bind processed predictions to og test data.
 
 tsPred %>%
   yardstick::metrics(pointsDiff, .pred) %>%
   mutate(.estimate = format(round(.estimate, 2), big.mark = ",")) %>%
   knitr::kable(format = "pipe", caption = "Test Set")
 
-# Step 7: Predict all games and add predictions to original dataset.
+# Step 6: Predict all games and add predictions to original dataset.
 dfProcessed <- bake(preprocessingRecipe, new_data = df)
 
 dfPred <- 
   xgbFinal %>%
-    fit(formula = pointsDiff ~ ., data = trainProcessed) %>% # Fit Model ... again
-    predict(new_data = dfProcessed)  %>%                     # Make Predictions
-    bind_cols(df)                                            # Bind processed predictions to all data.
+  fit(formula = pointsDiff ~ ., data = trainProcessed) %>% # Fit Model ... again
+  predict(new_data = dfProcessed)  %>%                     # Make Predictions
+  bind_cols(df)                                            # Bind processed predictions to all data.
 
 
 dfPred %>%
@@ -193,5 +187,3 @@ write.csv(dfPred, paste("cfbapp/gamesModifiedModel", year, ".csv", sep = ""))
 # Save Processed Training Data for future model interaction
 write.csv(trainProcessed, "downstream/trainProcessed.csv")
 write.csv(trainProcessed, "cfbapp/trainProcessed.csv")
-
-
