@@ -74,6 +74,40 @@ df4 <-
     relocate(coverPred, .after = cover) %>% 
     select(!matches("X"))
 
+# Add top-10 cover performers simulation to this data:
+performers_sim <-
+  df4 %>% 
+  group_by(school) %>% 
+  arrange(week) %>% 
+  filter(week %in% testWeeks) %>% 
+  mutate(cumCorrect = cummean(coverCorrect)*row_number(),
+         propCorrect = cummean(coverCorrect),
+         totalGames = row_number()) %>% 
+  select(school, week, coverPred, coverCorrect, cumCorrect, propCorrect, totalGames)  %>% 
+  ungroup() %>%
+  group_by(week) %>%  
+  arrange(week, desc(propCorrect), desc(totalGames)) %>%
+  mutate(top10 =if_else(row_number() <= 10, 1, 0),
+         position = row_number()) %>% 
+  group_by(school) %>% 
+  mutate(prevTop10 = lag(top10)) %>% 
+  ungroup()
+
+# Print conditional mean correct bets:
+performers_sim %>% 
+  filter(week >= min(testWeeks) + 1) %>% 
+  group_by(prevTop10, coverPred) %>% 
+  summarise(propCorrect = mean(coverCorrect, na.rm = T), 
+            countCorrect = propCorrect*n(), 
+            n = n()) %>% 
+  ungroup() %>% 
+  filter(!is.na(prevTop10)) %>% 
+  mutate(totalCorrect = sum(countCorrect),
+         expected = .5*n, 
+         chi = sum((countCorrect-expected)^2/expected),
+         p = 1-pchisq(chi, df = sum(!is.na(prevTop10))-1)) %>%
+  print(n = nrow(.))
+
 # Save Data:
 write.csv(df4, paste("downstream/gamesModifiedModel", year, ".csv", sep = "")) 
 
@@ -83,5 +117,5 @@ write.csv(df5, paste("downstream/gamesModifiedModel", year, "Condensed.csv", sep
 write.csv(df5, paste("cfbapp/gamesModifiedModel", year, "Condensed.csv", sep = ""))
 
 # Clear Memory
-rm(list = setdiff(c("year", "runnerPath", "testWeeks"), ls()))
+rm(list = setdiff(c("year", "runnerPath", "testWeeks", "df4"), ls()))
 gc()

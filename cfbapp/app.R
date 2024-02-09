@@ -15,19 +15,22 @@ library(fontawesome)
 library(shinyjs)
 library(DT)
 
+#
+year = 2023
+
 # Data:
 data_browser <- 
-  read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
+  read.csv(paste0("gamesModifiedModel", year, "CondensedLogos.csv")) %>% 
   select(school, opponent, week, points, pointsAllowed, matches("yards"), matches("Tds"), 
          matches("tackles"), matches("turnover"), matches("down"), -matches("Avg"), -matches("Lag"))
 
 primary_data <- 
-  read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
+  read.csv(paste0("gamesModifiedModel", year, "CondensedLogos.csv")) %>% 
        filter(classification == "fbs") %>%  
        select(school, opponent, week, spRating, matches("Avg"), -matches("Lag"))
 
 trend_data <- 
-  read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
+  read.csv(paste0("gamesModifiedModel", year, "CondensedLogos.csv")) %>% 
     filter(classification == "fbs") %>% 
     select(school, opponent, week, conference, color, 
            matches("yards"), matches("turnover"), matches("Tds"),
@@ -35,7 +38,7 @@ trend_data <-
           -matches("totalPenalties"))
 
 performance_data <-
-  read.csv("gamesModifiedModel2023CondensedLogos.csv") %>% 
+  read.csv(paste0("gamesModifiedModel", year, "CondensedLogos.csv")) %>% 
   filter(classification == "fbs" & !is.na(coverCorrect)) %>%  
   select(school, coverCorrect, spread, spreadOpen) %>% 
   group_by(school) %>% 
@@ -225,7 +228,7 @@ server <- function(input, output, session) {
       pTable_data <- 
         predictMatchup(team1, 
                      team2, 
-                     year = 2023, 
+                     year = year, 
                      manualBooks = TRUE, 
                      spreadTeam1 = spread, 
                      moneylineTeam1 = moneyLine1, 

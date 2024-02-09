@@ -16,6 +16,10 @@ library(Ckmeans.1d.dp)
 runnerPath <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(runnerPath)
 
+# Global Variables
+year = 2023
+runModels = TRUE
+
 # Make downstream directory
 if(!dir.exists("downstream")){
     dir.create("downstream")
@@ -36,9 +40,16 @@ if(!file.exists("cbsTeamXwalk2023.txt")){
   }
 }
 
-# Global Variables
-year = 2023
-runModels = TRUE
+if(!file.exists("spXwalk.txt")){
+  if(!file.exists("downstream/spXwalk.txt")){
+    stop("Please place 'spXwalk.txt' in the runner.R filepath")
+  }
+}else{
+  if(!file.exists("downstream/spXwalk.txt")){
+    file.copy(from = "spXwalk.txt", to = "downstream/spXwalk.txt")
+    file.remove("spXwalk.txt")
+  }
+}
 
 # Run files.
 source("01 get games bets and ranks.R")

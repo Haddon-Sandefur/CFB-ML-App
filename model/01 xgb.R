@@ -33,9 +33,21 @@ df2 <- df2 %>% select(pointsDiff,
                       -matches("cbs")
 )
 
+# The below takes features with > .2 corr with outcome - dont use for now
+# features <- 
+#   as.data.frame(cor(df2 %>% 
+#                     select(where(is.numeric)) %>%  
+#                     drop_na())) %>% 
+#   filter(abs(pointsDiff) > .2) %>% 
+#   row.names()
+
+# df2 <- 
+#   df2 %>% 
+#   select(pointsDiff, school, opponent, any_of(features), week)
+
 # Split train and test set:
 # testWeeks <- max(df2$week)
-testWeeks <- 7:max(df2$week)
+testWeeks <- 8:max(df2$week)
 dfTrain   <- df2 %>% filter(!(week %in% testWeeks)) %>% select(-week)
 dfTest    <- df2 %>% filter(week %in% testWeeks)    %>% select(-week)
 rm("df2")

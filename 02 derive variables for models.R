@@ -3,7 +3,6 @@
 #
 # Calculate differentials in stats per game.
 # Get lagged differences, lagged averages, lagged results.
-########################
 
 # Set working directory to runner path
 setwd(runnerPath)

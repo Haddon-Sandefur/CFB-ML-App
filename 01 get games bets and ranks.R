@@ -22,7 +22,7 @@ games   <- left_join(games, bets, by = "game_id", relationship = "many-to-many")
 
 # Not interested in books where the moneyline is not present.
 # Can remove these by dropping the below variable.
-games   <- games %>% drop_na(away_moneyline)
+# games   <- games %>% drop_na(away_moneyline)
 
 # Convert columns to camel case. 
 games   <- janitor::clean_names(games, "lower_camel")
@@ -68,13 +68,18 @@ games <- games %>% group_by(opponentConference) %>% mutate(cbsConfRankOpp = mean
 
 # Add SP ratings:
 # Read in xwalk for sp data
-spXwalk <- read.table("downstream/spXwalk.txt", header = TRUE)
-spData  <- left_join(read.csv("downstream/spData.csv"), spXwalk, by = "school", relationship = "many-to-one")
+spXwalk <- read.table(paste0("downstream/spXwalk.txt"), header = TRUE)
+spData  <- left_join(read.csv(paste0("downstream/spData", year, ".csv")), spXwalk, by = "school", relationship = "many-to-one")
 spData  <- rename(spData, spSchool = school)
 spData2 <- left_join(spData, dft, by = "alt_name3")
 
 # Join to games
 games <- left_join(games, spData2, by = c("school", "week"), relationship = "one-to-one")
+
+# Kick out FCS teams
+games <- games %>% filter(school %in% spData2$school)
+games <- games %>% filter(opponent %in% spData2$school)
+
 
 # Add Conference Average SP Ranking
 games <- games %>% group_by(conference) %>% mutate(spConfRank = mean(spRatingScale, na.rm = T))
